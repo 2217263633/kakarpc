@@ -1,0 +1,234 @@
+package myrpc
+
+import (
+	"errors"
+	"fmt"
+	"io/fs"
+	"net/http"
+	"net/http/httputil"
+	"net/rpc"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-co-op/gocron"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/wonderivan/logger"
+)
+
+type RPC struct {
+	Client    *rpc.Client `json:"client"`
+	Count     int         `json:"count"`     // 重联计数器
+	R         *gin.Engine `json:"r"`         // gin框架
+	Conn      any         `json:"conn"`      // 连接注册中心
+	Swag_port int         `json:"swag_port"` // swagger端口
+}
+
+// 是否存活
+func (con *RPC) IsAlive(req string, res *bool) error {
+	for rpcName := range RpcClient {
+		_rpcName := strings.Split(rpcName, ".")
+		if _rpcName[0] == req {
+			RpcClient[rpcName].Heart = time.Now()
+		}
+	}
+	*res = true
+	return nil
+}
+
+// 注册
+func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
+	RpcServer[req.Chinese_name] = &YamlStruct{Server: req}
+
+	time.AfterFunc(time.Second*5, func() {
+		for f := range RpcServer[req.Chinese_name].Server.Router {
+			files := r.getConfigList()
+			isFind := false
+			for _, file := range files {
+				if file.Name() == req.Chinese_name+".yaml" {
+					isFind = true
+					break
+				}
+			}
+			if !isFind {
+				os.Create("./config/" + req.Chinese_name + ".yaml")
+				os.WriteFile("./config/"+req.Chinese_name+".yaml", []byte(fmt.Sprintf(
+					"server:\n name: %s \n port: %d\n swag_port: %d \n path: %s \n mode: %d \n ",
+					req.Name, req.Port, req.Swag_port, req.Path, req.Mode)), 0644)
+
+				logger.Info("创建配置文件", "./config/"+req.Chinese_name+".yaml")
+			}
+			cli, err := rpc.DialHTTP("tcp", "127.0.0.1:"+strconv.Itoa(req.Port))
+			if err == nil {
+				var ff map[string]*rpc.Client = map[string]*rpc.Client{
+					req.Name + "." + f: cli,
+				}
+				if RpcClient[req.Chinese_name] == nil {
+					RpcClient[req.Chinese_name] = &RpcClientType{
+						Heart: time.Now(),
+						Addr:  "127.0.0.1:" + strconv.Itoa(req.Swag_port),
+						Name:  strings.Split(req.Name, ".")[0],
+					}
+					logger.Info("转发服务", "/"+req.Name)
+					centor.R.GET("/"+req.Name+"/*any", func(c *gin.Context) {
+						target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+						url, _ := url.Parse(target)
+						proxy := httputil.NewSingleHostReverseProxy(url)
+						proxy.ServeHTTP(c.Writer, c.Request)
+						// c.String(http.StatusOK, "this is "+req.Name)
+					})
+				}
+				RpcClient[req.Chinese_name].Client = ff
+
+				logger.Info("连接服务成功", req.Chinese_name, req.Name+"."+f)
+			} else {
+				logger.Error("连接服务失败", req.Name+"."+f, err)
+			}
+		}
+	})
+	// logger.Info("注册服务", req)
+	return nil
+}
+
+var initPort = 9100
+var centor *RPC
+
+func (r *RPC) CenterInit(_rpc *RPC) {
+	gin.SetMode(gin.ReleaseMode)
+	// conn := new(RPC)
+	centor = _rpc
+	rpc.Register(_rpc)
+	rpc.HandleHTTP()
+	_rpc.R.LoadHTMLFiles("./templates/index.html")
+
+	_rpc.R.GET("/index", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{"title": "动态路由配置中心",
+			"routerList": RpcClient,
+		})
+	})
+	_rpc.Swag_port = 9101
+	go _rpc.R.Run(fmt.Sprintf(":%d", _rpc.Swag_port))
+
+	logger.Info("rpc server start at port: ", initPort)
+	err := http.ListenAndServe(":"+strconv.Itoa(initPort), nil)
+	if err != nil {
+		logger.Error("error listening", err.Error())
+		return
+	}
+
+}
+
+func (r *RPC) init(conn any, port string) {
+	rpc.Register(conn)
+	rpc.HandleHTTP()
+	logger.Info("rpc server start at port: ", port)
+	err := http.ListenAndServe(port, nil)
+	if err != nil {
+		logger.Error("error listening", err.Error())
+		return
+	}
+}
+
+func (r *RPC) getConfigList() []fs.DirEntry {
+	config_path := "./config"
+	files, _ := os.ReadDir(config_path)
+	return files
+}
+
+func (con *RPC) GetConfig(req string, res *map[string]interface{}) error {
+	logger.Info("获取配置", req)
+	if req == "" {
+		(*res) = map[string]interface{}{
+			"data": "127.0.0.1:1234"}
+	} else if RpcServer[req] != nil {
+		(*res) = RpcServer[req].Server.Router
+
+	} else {
+		(*res) = map[string]interface{}{
+			"data": req + ": this service is not register"}
+	}
+	return nil
+}
+
+// 调用其他服务
+func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
+	logger.Info("调用服务", method.Chinese_name, method.Method, method.Param)
+	// logger.Info("服务列表", glo.RpcClient[method.Chinese_name])
+	if RpcClient[method.Chinese_name] != nil && RpcClient[method.Chinese_name].Client[method.Method] != nil {
+
+		err := RpcClient[method.Chinese_name].Client[method.Method].Call(method.Method, method.Param, res)
+		if err != nil {
+			(*res)["state"] = 401
+			(*res)["err"] = err
+			(*res)["data"] = []byte("[]")
+		} else {
+			(*res)["state"] = 200
+		}
+	} else {
+
+		(*res)["state"] = 401
+		(*res)["err"] = errors.New("this service is not online")
+		(*res)["data"] = []byte("[]")
+	}
+
+	return nil
+}
+
+type Functype func(int)
+
+// 连接注册中心
+func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
+	client, err := rpc.DialHTTP("tcp", "127.0.0.1:1234")
+	if err != nil {
+		logger.Error("rpc.DialHTTP error: %v", err)
+	} else {
+		_rpc.Client = client
+
+		err = client.Call("RPC.Register", yaml, &yaml)
+		if err != nil {
+			logger.Error("rpc.Register error: %v", err)
+		} else {
+			logger.Info("连接注册中心成功", _rpc.Count)
+		}
+	}
+
+	// // 判断注册进程是否存活
+	// // 主进程不存活，则每隔10秒重连一次
+	if _rpc.Count == 0 {
+		_rpc.Count += 1
+		ti := gocron.NewScheduler(time.UTC)
+		logger.Info("判断主进程是否存在")
+		ti.Every(10).Seconds().Do(func() {
+			var reply bool
+			if _rpc.Client == nil {
+				logger.Info("主进程已掉线，等待重连")
+				con.GoRpc(yaml, _rpc)
+			} else {
+				err := _rpc.Client.Call("RPC.IsAlive", yaml.Chinese_name, &reply)
+				if err != nil {
+					logger.Error("主进程已掉线，等待重连%v", err)
+					con.GoRpc(yaml, _rpc)
+				}
+			}
+
+		})
+		ti.StartAsync()
+		con.ginInit(_rpc.R, yaml.Swag_port, yaml.Name)
+		con.init(_rpc.Conn, ":"+strconv.Itoa(yaml.Port))
+	} else {
+		_rpc.Count += 1
+	}
+
+}
+
+func (con *RPC) ginInit(r *gin.Engine, port int, name string) {
+	r.GET("/"+name+"/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, ginSwagger.DocExpansion("none")))
+	logger.Info("gin run on port:", port)
+	go r.Run(fmt.Sprintf(":%d", port))
+}
+
+var MyRpc = &RPC{}
