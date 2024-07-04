@@ -1,6 +1,7 @@
 package myrpc
 
 import (
+	"fmt"
 	"net/rpc"
 	"time"
 )
@@ -42,3 +43,27 @@ type RpcClientType struct {
 var RpcServer = map[string]*YamlStruct{}
 
 var RpcClient = map[string]*RpcClientType{}
+
+type SqlStruct struct {
+	Values     string // 不要写 select
+	Tabel_name string // 不要写 from
+	Where      string // 自己写 where 或者 on
+	Order      string // 要写 order by
+	Page       int    // 自己写页码
+	Size       int    // 自己写size大小
+}
+
+func (_sql SqlStruct) ToString() string {
+	sql := fmt.Sprintf(`select %s from %s `,
+		_sql.Values, _sql.Tabel_name)
+
+	if _sql.Where != "" {
+		sql += _sql.Where
+	}
+
+	if _sql.Order != "" {
+		sql += " " + _sql.Order
+	}
+
+	return sql
+}
