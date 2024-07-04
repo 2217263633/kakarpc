@@ -9,6 +9,8 @@ import (
 
 type CusUtils struct{}
 
+var Utils *CusUtils = UtilsInit()
+
 func UtilsInit() *CusUtils {
 	return &CusUtils{}
 }
