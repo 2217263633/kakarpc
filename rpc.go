@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/2217263633/kakarpc/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
 	swaggerfiles "github.com/swaggo/files"
@@ -232,3 +233,4 @@ func (con *RPC) ginInit(r *gin.Engine, port int, name string) {
 }
 
 var MyRpc = &RPC{}
+var Utils *utils.CusUtils = utils.UtilsInit()
