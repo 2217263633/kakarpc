@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -121,7 +122,93 @@ func ErrDeal(err error, res *map[string]interface{}) {
 	}
 }
 
-func StructToSql(fileStruct any, obj map[string]interface{}) ([]string, []interface{}) {
+func StructToSql(fileStruct any) ([]string, []interface{}) {
+	t := reflect.TypeOf(fileStruct)
+	value := reflect.ValueOf(fileStruct)
+
+	fieleNum := t.NumField()
+	var typeStr []string = make([]string, 0)
+	var valueStr []interface{} = make([]interface{}, 0)
+	for i := 0; i < fieleNum; i++ {
+		if t.Field(i).Tag.Get("show") != "" {
+			continue
+		}
+		// logger.Info(t.Field(i).Type.String(), t.Field(i).Name)
+		// logger.Info(t.Field(i).Type.String(), t.Field(i).Name)
+		// logger.Info(t.Field(i).Type.String(), t.Field(i).Type.Name(), value.Field(i))
+		if t.Field(i).Type.Name() == "int" {
+			if value.Field(i).Int() != 0 {
+				valueStr = append(valueStr, value.Field(i).Int())
+				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+			}
+		} else if t.Field(i).Type.Name() == "float64" {
+			if value.Field(i).Float() > 0 {
+				valueStr = append(valueStr, value.Field(i).Float())
+				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+			}
+		} else if t.Field(i).Type.Name() == "float32" {
+			if value.Field(i).Float() > 0 {
+				valueStr = append(valueStr, value.Field(i).Float())
+				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+			}
+		} else if t.Field(i).Type.Name() == "string" {
+			if len(value.Field(i).String()) > 0 {
+				valueStr = append(valueStr, value.Field(i).String())
+				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+			}
+		} else if t.Field(i).Type.Name() == "Time" {
+
+			if value.Field(i).Interface().(time.Time).Year() < 2000 {
+				continue
+			}
+			valueStr = append(valueStr, value.Field(i).Interface().(time.Time).Local().Format("2006-01-02 15:04:05"))
+			// logger.Info(value.Field(i), value.Field(i).Interface().(time.Time).Local().Format("2006-01-02 15:04:05"))
+			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+		} else if t.Field(i).Type.String() == "[]int" {
+			var intArr = value.Field(i).Interface().([]int)
+			if len(intArr) == 0 {
+				continue
+			}
+			intStr := ""
+			for index, intVal := range intArr {
+				if index == len(intArr)-1 {
+					intStr += strconv.Itoa(intVal)
+				} else {
+					intStr += strconv.Itoa(intVal) + ","
+				}
+			}
+			valueStr = append(valueStr, intStr)
+			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+		} else if t.Field(i).Type.String() == "[]string" {
+			var strArr = value.Field(i).Interface().([]string)
+			intStr := ""
+			for index, intVal := range strArr {
+				if index == len(strArr)-1 {
+					intStr += intVal
+				} else {
+					intStr += intVal + ","
+				}
+			}
+			valueStr = append(valueStr, intStr)
+			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+		} else if t.Field(i).Type.String() == "bool" {
+
+			var strArr = value.Field(i).Interface().(bool)
+			intStr := 0
+			if strArr {
+				intStr = 1
+
+			}
+			valueStr = append(valueStr, intStr)
+			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+
+		}
+	}
+
+	return typeStr, valueStr
+}
+
+func StructToSql2(fileStruct any, obj map[string]interface{}) ([]string, []interface{}) {
 	var typeStr []string = make([]string, 0)
 	var valueStr []interface{} = make([]interface{}, 0)
 	t := reflect.TypeOf(fileStruct)
