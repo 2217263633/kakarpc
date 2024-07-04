@@ -182,7 +182,7 @@ type Functype func(int)
 
 // 连接注册中心
 func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
-	client, err := rpc.DialHTTP("tcp", "127.0.0.1:1234")
+	client, err := rpc.DialHTTP("tcp", "127.0.0.1:9100")
 	if err != nil {
 		logger.Error("rpc.DialHTTP error: %v", err)
 	} else {
