@@ -3,6 +3,7 @@ package myrpc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"net/url"
@@ -72,4 +73,26 @@ func GetParams(c *gin.Context) {
 		// c.Request.URL.Query().Set(key, st)
 	}
 	// logger.Info(c.Request.URL.Query())
+}
+
+type SqlStruct struct {
+	Values     string // 不要写 select
+	Tabel_name string // 不要写 from
+	Where      string // 自己写 where 或者 on
+	Order      string // 要写 order by
+}
+
+func (_sql SqlStruct) ToString() string {
+	sql := fmt.Sprintf(`select %s from %s `,
+		_sql.Values, _sql.Tabel_name)
+
+	if _sql.Where != "" {
+		sql += _sql.Where
+	}
+
+	if _sql.Order != "" {
+		sql += " " + _sql.Order
+	}
+
+	return sql
 }
