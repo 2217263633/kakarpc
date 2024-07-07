@@ -9,6 +9,7 @@ import (
 	"net/rpc"
 	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -196,6 +197,13 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		_rpc.Client = client
 
 		err = client.Call("RPC.Register", yaml, &yaml)
+
+		structType := reflect.TypeOf(_rpc.Conn)
+
+		for i := 0; i < structType.NumMethod(); i++ {
+			method := structType.Method(i)
+			yaml.Router[method.Name] = []string{method.Type.String()}
+		}
 		if err != nil {
 			logger.Error("rpc.Register error: %v", err)
 		} else {
