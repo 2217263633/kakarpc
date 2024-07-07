@@ -52,7 +52,8 @@ func JudgeTable(Rpc *RPC, table string) ([]map[string]interface{}, error) {
 	return list_sql, data["err"].(error)
 }
 
-func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, error) {
+// data page size error
+func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, int, int, error) {
 	map_sql := sql.ToMap()
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", RpcMethod{
@@ -60,19 +61,19 @@ func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, error) {
 		Method:       "MysqlService.PageSql",
 		Param:        map_sql}, &data)
 	if data == nil || data["data"] == nil {
-		return []map[string]interface{}{}, errors.New("数据库服务已离线，请联系管理员")
+		return []map[string]interface{}{}, 0, 0, errors.New("数据库服务已离线，请联系管理员")
 	}
 	var list_sql []map[string]interface{}
 	json.Unmarshal(data["data"].([]byte), &list_sql)
 	if fmt.Sprintf("%T", data["err"]) == "string" {
-		return list_sql, errors.New(data["err"].(string))
+		return list_sql, sql.Page, sql.Size, errors.New(data["err"].(string))
 	}
 
 	if fmt.Sprintf("%T", data["err"]) == "error" {
-		return list_sql, data["err"].(error)
+		return list_sql, sql.Page, sql.Size, data["err"].(error)
 	}
 
-	return list_sql, nil
+	return list_sql, sql.Page, sql.Size, nil
 }
 
 func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
