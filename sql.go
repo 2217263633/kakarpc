@@ -66,7 +66,12 @@ func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, error) {
 	if fmt.Sprintf("%T", data["err"]) == "string" {
 		return list_sql, errors.New(data["err"].(string))
 	}
-	return list_sql, data["err"].(error)
+
+	if fmt.Sprintf("%T", data["err"]) == "error" {
+		return list_sql, data["err"].(error)
+	}
+
+	return list_sql, nil
 }
 
 func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
@@ -291,6 +296,7 @@ func CreateTable(Rpc *RPC, sql string) error {
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.CreateTable",
 		Param:        sql}, &data)
+
 	if data == nil || data["data"] == nil {
 		return errors.New("数据库服务已离线，请联系管理员")
 	}
