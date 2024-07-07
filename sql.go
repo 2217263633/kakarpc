@@ -53,12 +53,12 @@ func JudgeTable(Rpc *RPC, table string) ([]map[string]interface{}, error) {
 }
 
 func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, error) {
-
+	map_sql := sql.ToJson()
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.PageSql",
-		Param:        sql.ToString()}, &data)
+		Param:        map_sql}, &data)
 	if data == nil || data["data"] == nil {
 		return []map[string]interface{}{}, errors.New("数据库服务已离线，请联系管理员")
 	}

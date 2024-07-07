@@ -169,7 +169,6 @@ func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
 	logger.Info("调用服务", method.Chinese_name, method.Method, method.Param)
 
 	if RpcClient[method.Chinese_name] != nil && RpcClient[method.Chinese_name].Client[method.Method] != nil {
-
 		err := RpcClient[method.Chinese_name].Client[method.Method].Call(method.Method, method.Param, res)
 		if err != nil {
 			(*res)["state"] = 401

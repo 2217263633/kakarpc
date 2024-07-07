@@ -1,6 +1,7 @@
 package myrpc
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/rpc"
 	"time"
@@ -77,6 +78,17 @@ func (_sql SqlStruct) ToMap() map[string]interface{} {
 		"page":       _sql.Page,
 		"size":       _sql.Size,
 	}
+}
+
+func (_sql SqlStruct) ToJson() []byte {
+	j, _ := json.Marshal(_sql)
+	return j
+}
+
+func (_sql SqlStruct) JsonTo(_json []byte) SqlStruct {
+	newMap := SqlStruct{}
+	json.Unmarshal(_json, &newMap)
+	return newMap
 }
 
 func (_sql SqlStruct) MapTo(_map map[string]interface{}) SqlStruct {
