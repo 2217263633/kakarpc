@@ -60,7 +60,6 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 				url, _ := url.Parse(target)
 				proxy := httputil.NewSingleHostReverseProxy(url)
 				proxy.ServeHTTP(c.Writer, c.Request)
-				// c.String(http.StatusOK, "this is "+req.Name)
 			})
 		}
 
@@ -197,14 +196,13 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 	} else {
 		_rpc.Client = client
 
-		err = client.Call("RPC.Register", yaml, &yaml)
-
 		structType := reflect.TypeOf(_rpc.Conn)
 
 		for i := 0; i < structType.NumMethod(); i++ {
 			method := structType.Method(i)
 			yaml.Router[method.Name] = []string{method.Type.String()}
 		}
+		err = client.Call("RPC.Register", yaml, &yaml)
 		if err != nil {
 			logger.Error("rpc.Register error: %v", err)
 		} else {
