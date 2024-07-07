@@ -55,6 +55,7 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 					break
 				}
 			}
+
 			if !isFind {
 				os.Create("./config/" + req.Chinese_name + ".yaml")
 				os.WriteFile("./config/"+req.Chinese_name+".yaml", []byte(fmt.Sprintf(
@@ -83,7 +84,12 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 						// c.String(http.StatusOK, "this is "+req.Name)
 					})
 				}
-				RpcClient[req.Chinese_name].Client = ff
+
+				if RpcClient[req.Chinese_name].Client == nil {
+					RpcClient[req.Chinese_name].Client = ff
+				} else {
+					RpcClient[req.Chinese_name].Client[req.Name+"."+f] = cli
+				}
 
 				logger.Info("连接服务成功", req.Chinese_name, req.Name+"."+f)
 			} else {
