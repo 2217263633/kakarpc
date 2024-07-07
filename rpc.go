@@ -47,6 +47,23 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 	RpcServer[req.Chinese_name] = &YamlStruct{Server: req}
 
 	time.AfterFunc(time.Second*5, func() {
+
+		if RpcClient[req.Chinese_name] == nil {
+			RpcClient[req.Chinese_name] = &RpcClientType{
+				Heart: time.Now(),
+				Addr:  "127.0.0.1:" + strconv.Itoa(req.Swag_port),
+				Name:  strings.Split(req.Name, ".")[0],
+			}
+			logger.Info("转发服务", "/"+req.Name)
+			centor.R.GET("/"+req.Name+"/*any", func(c *gin.Context) {
+				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				url, _ := url.Parse(target)
+				proxy := httputil.NewSingleHostReverseProxy(url)
+				proxy.ServeHTTP(c.Writer, c.Request)
+				// c.String(http.StatusOK, "this is "+req.Name)
+			})
+		}
+
 		for f := range RpcServer[req.Chinese_name].Server.Router {
 			files := r.getConfigList()
 			isFind := false
@@ -69,21 +86,6 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 			if err == nil {
 				var ff map[string]*rpc.Client = map[string]*rpc.Client{
 					req.Name + "." + f: cli,
-				}
-				if RpcClient[req.Chinese_name] == nil {
-					RpcClient[req.Chinese_name] = &RpcClientType{
-						Heart: time.Now(),
-						Addr:  "127.0.0.1:" + strconv.Itoa(req.Swag_port),
-						Name:  strings.Split(req.Name, ".")[0],
-					}
-					logger.Info("转发服务", "/"+req.Name)
-					centor.R.GET("/"+req.Name+"/*any", func(c *gin.Context) {
-						target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
-						url, _ := url.Parse(target)
-						proxy := httputil.NewSingleHostReverseProxy(url)
-						proxy.ServeHTTP(c.Writer, c.Request)
-						// c.String(http.StatusOK, "this is "+req.Name)
-					})
 				}
 
 				if RpcClient[req.Chinese_name].Client == nil {

@@ -6,4 +6,5 @@ git add .
 git commit -m "update version to $version"
 git tag $version -m "$version"
 git push --tags
+git push
 sleep  10s
