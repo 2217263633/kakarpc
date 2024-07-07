@@ -52,7 +52,7 @@ func JudgeTable(Rpc *RPC, table string) ([]map[string]interface{}, error) {
 	return list_sql, data["err"].(error)
 }
 
-// data page size error
+// resu ,total,size,error
 func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, int, int, error) {
 	map_sql := sql.ToMap()
 	var data map[string]interface{}
@@ -66,14 +66,14 @@ func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, int, int, error
 	var list_sql []map[string]interface{}
 	json.Unmarshal(data["data"].([]byte), &list_sql)
 	if fmt.Sprintf("%T", data["err"]) == "string" {
-		return list_sql, sql.Page, sql.Size, errors.New(data["err"].(string))
+		return list_sql, 0, sql.Size, errors.New(data["err"].(string))
 	}
 
 	if fmt.Sprintf("%T", data["err"]) == "error" {
-		return list_sql, sql.Page, sql.Size, data["err"].(error)
+		return list_sql, 0, sql.Size, data["err"].(error)
 	}
 
-	return list_sql, sql.Page, sql.Size, nil
+	return list_sql, data["total"].(int), sql.Size, nil
 }
 
 func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
