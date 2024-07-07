@@ -67,3 +67,26 @@ func (_sql SqlStruct) ToString() string {
 
 	return sql
 }
+
+func (_sql SqlStruct) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"values":     _sql.Values,
+		"tabel_name": _sql.Tabel_name,
+		"where":      _sql.Where,
+		"order":      _sql.Order,
+		"page":       _sql.Page,
+		"size":       _sql.Size,
+	}
+}
+
+func (_sql SqlStruct) MapTo(_map map[string]interface{}) SqlStruct {
+	return SqlStruct{
+		Values:     _map["values"].(string),
+		Tabel_name: _map["tabel_name"].(string),
+		Where:      _map["where"].(string),
+		Order:      _map["order"].(string),
+		Page:       _map["page"].(int),
+		Size:       _map["size"].(int),
+	}
+
+}

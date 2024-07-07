@@ -167,7 +167,7 @@ func (con *RPC) GetConfig(req string, res *map[string]interface{}) error {
 // 调用其他服务
 func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
 	logger.Info("调用服务", method.Chinese_name, method.Method, method.Param)
-	// logger.Info("服务列表", glo.RpcClient[method.Chinese_name])
+
 	if RpcClient[method.Chinese_name] != nil && RpcClient[method.Chinese_name].Client[method.Method] != nil {
 
 		err := RpcClient[method.Chinese_name].Client[method.Method].Call(method.Method, method.Param, res)
