@@ -53,7 +53,7 @@ func JudgeTable(Rpc *RPC, table string) ([]map[string]interface{}, error) {
 }
 
 func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, error) {
-	map_sql := sql.ToJson()
+	map_sql := sql.ToMap()
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", RpcMethod{
 		Chinese_name: "数据库调用",
