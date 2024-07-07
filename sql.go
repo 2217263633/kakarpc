@@ -245,3 +245,88 @@ func StructToSql2(fileStruct any, obj map[string]interface{}) ([]string, []inter
 
 	return typeStr, valueStr
 }
+
+func InsertTable(Rpc *RPC, sql string) error {
+	var data map[string]interface{}
+	Rpc.Client.Call("RPC.Call", RpcMethod{
+		Chinese_name: "数据库调用",
+		Method:       "MysqlService.InsertData",
+		Param:        sql}, &data)
+	if data == nil || data["data"] == nil {
+		return errors.New("数据库服务已离线，请联系管理员")
+	}
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if data["err"] == nil {
+		return errors.New(data["err"].(string))
+	}
+	return nil
+}
+
+func QueryIdlimit1(Rpc *RPC, tableName string) ([]map[string]interface{}, error) {
+	var data map[string]interface{}
+	Rpc.Client.Call("RPC.Call", RpcMethod{
+		Chinese_name: "数据库调用",
+		Method:       "MysqlService.InsertData",
+		Param:        tableName}, &data)
+	if data == nil || data["data"] == nil {
+		return []map[string]interface{}{}, errors.New("数据库服务已离线，请联系管理员")
+	}
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if fmt.Sprintf("%T", data["err"]) == "string" {
+		return list_sql, errors.New(data["err"].(string))
+	}
+	return list_sql, data["err"].(error)
+}
+
+func CreateTable(Rpc *RPC, sql string) error {
+	var data map[string]interface{}
+	Rpc.Client.Call("RPC.Call", RpcMethod{
+		Chinese_name: "数据库调用",
+		Method:       "MysqlService.CreateTable",
+		Param:        sql}, &data)
+	if data == nil || data["data"] == nil {
+		return errors.New("数据库服务已离线，请联系管理员")
+	}
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if data["err"] == nil {
+		return errors.New(data["err"].(string))
+	}
+	return nil
+}
+
+func UpdateTable(Rpc *RPC, sql string) error {
+	var data map[string]interface{}
+	Rpc.Client.Call("RPC.Call", RpcMethod{
+		Chinese_name: "数据库调用",
+		Method:       "MysqlService.UpdateData",
+		Param:        sql}, &data)
+	if data == nil || data["data"] == nil {
+		return errors.New("数据库服务已离线，请联系管理员")
+	}
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if data["err"] == nil {
+		return errors.New(data["err"].(string))
+	}
+	return nil
+}
+
+func DeleteTable(Rpc *RPC, sql string) error {
+	var data map[string]interface{}
+	Rpc.Client.Call("RPC.Call", RpcMethod{
+		Chinese_name: "数据库调用",
+		Method:       "MysqlService.DeleteData",
+		Param:        sql}, &data)
+	if data == nil || data["data"] == nil {
+		return errors.New("数据库服务已离线，请联系管理员")
+	}
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if data["err"] == nil {
+		return errors.New(data["err"].(string))
+	}
+	return nil
+}
