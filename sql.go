@@ -262,8 +262,8 @@ func InsertTable(Rpc *RPC, sql string) error {
 	if data == nil || data["state"] == nil {
 		return errors.New("数据库服务已离线，请联系管理员")
 	}
-	var list_sql []map[string]interface{}
-	json.Unmarshal(data["data"].([]byte), &list_sql)
+	// var list_sql []map[string]interface{}
+	// json.Unmarshal(data["data"].([]byte), &list_sql)
 	if data["err"] == nil {
 		return errors.New(data["err"].(string))
 	}
