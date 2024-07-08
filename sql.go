@@ -264,7 +264,7 @@ func InsertTable(Rpc *RPC, sql string) error {
 	}
 	// var list_sql []map[string]interface{}
 	// json.Unmarshal(data["data"].([]byte), &list_sql)
-	if data["err"] == nil {
+	if data["err"] != nil {
 		return errors.New(data["err"].(string))
 	}
 	return nil
