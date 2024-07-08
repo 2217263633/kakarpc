@@ -39,6 +39,7 @@ type RpcClientType struct {
 	Heart  time.Time              `json:"heart"`  // 心跳时间
 	Addr   string                 `json:"addr"`   // rpc地址
 	Name   string                 `json:"name"`   // rpc名称
+	Online bool                   `json:"online"` // 是否在线
 }
 
 var RpcServer = map[string]*YamlStruct{}

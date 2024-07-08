@@ -61,6 +61,24 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 				proxy := httputil.NewSingleHostReverseProxy(url)
 				proxy.ServeHTTP(c.Writer, c.Request)
 			})
+			centor.R.POST("/"+req.Name+"/*any", func(c *gin.Context) {
+				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				url, _ := url.Parse(target)
+				proxy := httputil.NewSingleHostReverseProxy(url)
+				proxy.ServeHTTP(c.Writer, c.Request)
+			})
+			centor.R.PUT("/"+req.Name+"/*any", func(c *gin.Context) {
+				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				url, _ := url.Parse(target)
+				proxy := httputil.NewSingleHostReverseProxy(url)
+				proxy.ServeHTTP(c.Writer, c.Request)
+			})
+			centor.R.DELETE("/"+req.Name+"/*any", func(c *gin.Context) {
+				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				url, _ := url.Parse(target)
+				proxy := httputil.NewSingleHostReverseProxy(url)
+				proxy.ServeHTTP(c.Writer, c.Request)
+			})
 		}
 
 		for f := range RpcServer[req.Chinese_name].Server.Router {
@@ -210,8 +228,8 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		}
 	}
 
-	// // 判断注册进程是否存活
-	// // 主进程不存活，则每隔10秒重连一次
+	// 判断注册进程是否存活
+	// 主进程不存活，则每隔10秒重连一次
 	if _rpc.Count == 0 {
 		_rpc.Count += 1
 		ti := gocron.NewScheduler(time.UTC)
