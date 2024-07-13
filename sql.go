@@ -73,7 +73,7 @@ func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, int, int, error
 		return list_sql, 0, sql.Size, data["err"].(error)
 	}
 
-	return list_sql, data["total"].(int), sql.Size, nil
+	return list_sql, data["total"].(int), data["size"].(int), nil
 }
 
 func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
