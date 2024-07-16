@@ -123,7 +123,7 @@ func CallAny(Rpc *RPC, method string, param string, chinese_name string) (interf
 func ErrDeal(err error, res *map[string]interface{}) {
 	if err != nil {
 		(*res)["state"] = 401
-		(*res)["err"] = err.Error()
+		(*res)["err"] = err
 	} else {
 		(*res)["state"] = 200
 	}
