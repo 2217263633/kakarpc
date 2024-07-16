@@ -192,7 +192,13 @@ func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
 			(*res)["err"] = err
 			(*res)["data"] = []byte("[]")
 		} else {
-			(*res)["state"] = 200
+			if (*res)["err"] != nil {
+				(*res)["state"] = 401
+				(*res)["err"] = errors.New((*res)["err"].(string))
+			} else {
+				(*res)["state"] = 200
+
+			}
 		}
 	} else {
 
