@@ -1,7 +1,6 @@
 package myrpc
 
 import (
-	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -184,26 +183,24 @@ func (con *RPC) GetConfig(req string, res *map[string]interface{}) error {
 // 调用其他服务
 func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
 	logger.Info("调用服务", method.Chinese_name, method.Method, method.Param)
-
+	// 因为编码原因 返回的 err 我们把它变成string  那边拿到后 做err 处理
 	if RpcClient[method.Chinese_name] != nil && RpcClient[method.Chinese_name].Client[method.Method] != nil {
 		err := RpcClient[method.Chinese_name].Client[method.Method].Call(method.Method, method.Param, res)
 		if err != nil {
 			(*res)["state"] = 401
-			(*res)["err"] = err
+			(*res)["err"] = err.Error()
 			(*res)["data"] = []byte("[]")
 		} else {
 			if (*res)["err"] != nil {
 				(*res)["state"] = 401
-				(*res)["err"] = errors.New((*res)["err"].(string))
 			} else {
 				(*res)["state"] = 200
-
 			}
 		}
 	} else {
 
 		(*res)["state"] = 401
-		(*res)["err"] = errors.New("this service is not online")
+		(*res)["err"] = "this service is not online"
 		(*res)["data"] = []byte("[]")
 	}
 
