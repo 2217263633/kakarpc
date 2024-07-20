@@ -1,6 +1,8 @@
 package myrpc
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -205,6 +207,26 @@ func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
 	}
 
 	return nil
+}
+
+// 特定的调用
+func (con *RPC) CallOther(method RpcMethod, res *map[string]interface{}) ([]map[string]interface{}, error) {
+	var data map[string]interface{}
+	con.Call(method, &data)
+
+	if data == nil || data["data"] == nil {
+		return []map[string]interface{}{}, errors.New("数据库服务已离线，请联系管理员")
+	}
+
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if data["err"] == nil {
+		return list_sql, nil
+	}
+	if fmt.Sprintf("%T", data["err"]) == "string" {
+		return list_sql, errors.New(data["err"].(string))
+	}
+	return list_sql, data["err"].(error)
 }
 
 type Functype func(int)
