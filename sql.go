@@ -344,3 +344,21 @@ func DeleteTable(Rpc *RPC, sql string) error {
 	}
 	return nil
 }
+
+// 特定的调用
+func CallOther(Rpc *RPC, method RpcMethod) error {
+	var data map[string]interface{}
+	Rpc.Client.Call("RPC.Call", method, &data)
+
+	if data == nil || data["data"] == nil {
+		return errors.New("数据库服务已离线，请联系管理员")
+	}
+
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if data["err"] == nil {
+		return errors.New(data["err"].(string))
+	}
+
+	return nil
+}
