@@ -227,7 +227,7 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		if err != nil {
 			logger.Error("rpc.Register error: %v", err)
 		} else {
-			logger.Info("连接注册中心成功", _rpc.Count)
+			logger.Info("连接注册中心成功:", yaml.Chinese_name, _rpc.Count)
 		}
 	}
 

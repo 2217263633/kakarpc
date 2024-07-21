@@ -53,6 +53,7 @@ type SqlStruct struct {
 	Order      string // 要写 order by
 	Page       int    // 自己写页码
 	Size       int    // 自己写size大小
+	Company_id int    // 公司id
 }
 
 func (_sql SqlStruct) ToString() string {
@@ -78,6 +79,7 @@ func (_sql SqlStruct) ToMap() map[string]interface{} {
 		"order":      _sql.Order,
 		"page":       _sql.Page,
 		"size":       _sql.Size,
+		"company_id": _sql.Company_id,
 	}
 }
 
@@ -93,7 +95,7 @@ func (_sql SqlStruct) JsonTo(_json []byte) SqlStruct {
 }
 
 func (_sql SqlStruct) MapTo(_map map[string]interface{}) SqlStruct {
-	return SqlStruct{
+	sql := SqlStruct{
 		Values:     _map["values"].(string),
 		Tabel_name: _map["tabel_name"].(string),
 		Where:      _map["where"].(string),
@@ -101,5 +103,11 @@ func (_sql SqlStruct) MapTo(_map map[string]interface{}) SqlStruct {
 		Page:       _map["page"].(int),
 		Size:       _map["size"].(int),
 	}
+
+	if _map["company_id"] != nil {
+		sql.Company_id = _map["company_id"].(int)
+	}
+
+	return sql
 
 }
