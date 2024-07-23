@@ -304,7 +304,7 @@ func CreateTable(Rpc *RPC, sql string) error {
 		return errors.New("数据库服务已离线，请联系管理员")
 	}
 
-	if data["err"] == nil {
+	if data["err"] != nil {
 		return errors.New(data["err"].(string))
 	}
 	return nil
@@ -321,7 +321,7 @@ func UpdateTable(Rpc *RPC, sql string) error {
 	}
 	var list_sql []map[string]interface{}
 	json.Unmarshal(data["data"].([]byte), &list_sql)
-	if data["err"] == nil {
+	if data["err"] != nil {
 		return errors.New(data["err"].(string))
 	}
 	return nil
