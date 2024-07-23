@@ -337,7 +337,7 @@ func DeleteTable(Rpc *RPC, sql string) error {
 		return errors.New("数据库服务已离线，请联系管理员")
 	}
 
-	if data["err"] == nil {
+	if data["err"] != nil {
 		return errors.New(data["err"].(string))
 	}
 	return nil
