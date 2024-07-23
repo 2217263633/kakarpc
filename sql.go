@@ -333,11 +333,10 @@ func DeleteTable(Rpc *RPC, sql string) error {
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.DeleteData",
 		Param:        sql}, &data)
-	if data == nil || data["data"] == nil {
+	if data == nil {
 		return errors.New("数据库服务已离线，请联系管理员")
 	}
-	var list_sql []map[string]interface{}
-	json.Unmarshal(data["data"].([]byte), &list_sql)
+
 	if data["err"] == nil {
 		return errors.New(data["err"].(string))
 	}
