@@ -69,21 +69,16 @@ func (utils CusUtils) IndexOfInt(arr []int, val int) int {
 }
 
 func (utils CusUtils) IncludeAdd(sqlStr string, reviceStrs string) string {
+	var vals = ""
 	if !utils.Include(sqlStr, reviceStrs, ",") {
-		reviceStrs += "," + sqlStr
+		vals = sqlStr + "," + reviceStrs
 	} else {
-		reviceStrs = utils.IncludeDelete(sqlStr, reviceStrs, ",")
-		if reviceStrs == "" {
-			reviceStrs = " "
+		vals = utils.IncludeDelete(sqlStr, reviceStrs, ",")
+		if vals == "" {
+			vals = " "
 		}
 	}
-	if len(reviceStrs) > 0 && reviceStrs[0:1] == "," {
-		reviceStrs = reviceStrs[1:]
-	}
-	if len(reviceStrs) > 0 && reviceStrs[len(reviceStrs)-1:] == "," {
-		reviceStrs = reviceStrs[:len(reviceStrs)-1]
-	}
-	return reviceStrs
+	return vals
 }
 
 func ContainsStr(arr []string, val string) int {
