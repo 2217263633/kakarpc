@@ -46,6 +46,41 @@ func (utils CusUtils) IncludeDelete(strs string, findStr string, split string) s
 	return retuStr
 }
 
+func (utils CusUtils) IncludeNoDelete(strs string, findStr string, split string) string {
+	var strArr = strings.Split(strs, split)
+	var findStrArr = strings.Split(findStr, split)
+	var retuStr = ""
+	var index = 0
+	for _, str := range strArr {
+		isFind := false
+		for _, findStr := range findStrArr {
+			if str == findStr {
+				isFind = true
+				break
+			}
+		}
+
+		if !isFind {
+			if str != "" {
+				if index == 0 {
+					retuStr += str
+				} else {
+					retuStr += split + str
+				}
+				index++
+			}
+		} else {
+			if index == 0 {
+				retuStr += str
+			} else {
+				retuStr += split + str
+			}
+			index++
+		}
+	}
+	return retuStr
+}
+
 func (utils CusUtils) IndexOf(arr []string, val string) int {
 	index := -1
 	for i, ar := range arr {
@@ -73,7 +108,7 @@ func (utils CusUtils) IncludeAdd(sqlStr string, reviceStrs string) string {
 	if !utils.Include(sqlStr, reviceStrs, ",") {
 		vals = sqlStr + "," + reviceStrs
 	} else {
-		vals = utils.IncludeDelete(sqlStr, reviceStrs, ",")
+		vals = utils.IncludeNoDelete(sqlStr, reviceStrs, ",")
 		if vals == "" {
 			vals = " "
 		}
