@@ -71,3 +71,9 @@ func GetParams(c *gin.Context) {
 		c.Request.URL.RawQuery = params.Encode()
 	}
 }
+
+func GetGinTemp(c *gin.Context) []byte {
+	var _temp, _ = io.ReadAll(c.Request.Body)
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(_temp))
+	return _temp
+}
