@@ -271,21 +271,25 @@ func InsertTable(Rpc *RPC, sql string) error {
 	return nil
 }
 
-func InsertTableId(Rpc *RPC, sql string) ([]map[string]interface{}, error) {
+func InsertTableId(Rpc *RPC, sql string) (int, error) {
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", RpcMethod{
 		Chinese_name: "数据库调用",
-		Method:       "MysqlService.InsertDataId",
+		Method:       "MysqlService.InsertTableId",
 		Param:        sql}, &data)
 	if data == nil || data["state"] == nil {
-		return make([]map[string]interface{}, 0), errors.New("数据库服务已离线，请联系管理员")
+		return -1, errors.New("数据库服务已离线，请联系管理员")
 	}
-	var list_sql []map[string]interface{}
-	json.Unmarshal(data["data"].([]byte), &list_sql)
+
 	if data["err"] != nil {
-		return make([]map[string]interface{}, 0), errors.New(data["err"].(string))
+		return 0, errors.New(data["err"].(string))
 	}
-	return list_sql, nil
+	var list_sql interface{}
+	err := json.Unmarshal(data["data"].([]byte), &list_sql)
+	if err != nil {
+		return 0, err
+	}
+	return int(list_sql.(float64)), nil
 }
 
 func QueryIdlimit1(Rpc *RPC, tableName string) ([]map[string]interface{}, error) {
