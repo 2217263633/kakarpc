@@ -271,13 +271,30 @@ func InsertTable(Rpc *RPC, sql string) error {
 	return nil
 }
 
+func InsertTableId(Rpc *RPC, sql string) ([]map[string]interface{}, error) {
+	var data map[string]interface{}
+	Rpc.Client.Call("RPC.Call", RpcMethod{
+		Chinese_name: "数据库调用",
+		Method:       "MysqlService.InsertDataId",
+		Param:        sql}, &data)
+	if data == nil || data["state"] == nil {
+		return make([]map[string]interface{}, 0), errors.New("数据库服务已离线，请联系管理员")
+	}
+	var list_sql []map[string]interface{}
+	json.Unmarshal(data["data"].([]byte), &list_sql)
+	if data["err"] != nil {
+		return make([]map[string]interface{}, 0), errors.New(data["err"].(string))
+	}
+	return list_sql, nil
+}
+
 func QueryIdlimit1(Rpc *RPC, tableName string) ([]map[string]interface{}, error) {
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.QueryIdlimit1",
 		Param:        tableName}, &data)
-	if data == nil || data["data"] == nil {
+	if data == nil || data["state"] == nil {
 		return []map[string]interface{}{}, errors.New("数据库服务已离线，请联系管理员")
 	}
 	var list_sql []map[string]interface{}
