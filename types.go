@@ -28,8 +28,8 @@ func IsChinese(str string) bool {
 func DetailErr(errStr string, c *gin.Context) {
 	pc, _, _, _ := runtime.Caller(1)
 
-	logger.Error(errStr)
-	logger.Error(runtime.FuncForPC(pc).FileLine(pc))
+	file, line := runtime.FuncForPC(pc).FileLine(pc)
+	logger.Error(file, line, errStr)
 	data := "服务器错误"
 
 	if strings.Contains(errStr, "Duplicate entry") {

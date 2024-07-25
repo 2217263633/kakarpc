@@ -369,7 +369,7 @@ func CallOther(Rpc *RPC, method RpcMethod) (interface{}, error) {
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", method, &data)
 
-	if data == nil || data["data"] == nil {
+	if data == nil || data["state"] == nil {
 		return []map[string]interface{}{}, errors.New("数据异常")
 	}
 

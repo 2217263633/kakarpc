@@ -86,6 +86,7 @@ func (_sql SqlStruct) ToMap() map[string]interface{} {
 		"page":       _sql.Page,
 		"size":       _sql.Size,
 		"company_id": _sql.Company_id,
+		"params":     _sql.Params,
 	}
 }
 
@@ -108,11 +109,13 @@ func (_sql SqlStruct) MapTo(_map map[string]interface{}) SqlStruct {
 		Order:      _map["order"].(string),
 		Page:       _map["page"].(int),
 		Size:       _map["size"].(int),
+		Company_id: _map["company_id"].(int),
+		Params:     _map["params"].(string),
 	}
 
-	if _map["company_id"] != nil {
-		sql.Company_id = _map["company_id"].(int)
-	}
+	// if _map["company_id"] != nil {
+	// 	sql.Company_id = _map["company_id"].(int)
+	// }
 
 	return sql
 
