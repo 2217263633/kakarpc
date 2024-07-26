@@ -102,20 +102,31 @@ func (_sql SqlStruct) JsonTo(_json []byte) SqlStruct {
 }
 
 func (_sql SqlStruct) MapTo(_map map[string]interface{}) SqlStruct {
-	sql := SqlStruct{
-		Values:     _map["values"].(string),
-		Tabel_name: _map["tabel_name"].(string),
-		Where:      _map["where"].(string),
-		Order:      _map["order"].(string),
-		Page:       _map["page"].(int),
-		Size:       _map["size"].(int),
-		Company_id: _map["company_id"].(int),
-		Params:     _map["params"].(string),
+	sql := SqlStruct{}
+	if _map["values"] != nil {
+		sql.Values = _map["values"].(string)
 	}
-
-	// if _map["company_id"] != nil {
-	// 	sql.Company_id = _map["company_id"].(int)
-	// }
+	if _map["tabel_name"] != nil {
+		sql.Tabel_name = _map["tabel_name"].(string)
+	}
+	if _map["where"] != nil {
+		sql.Where = _map["where"].(string)
+	}
+	if _map["order"] != nil {
+		sql.Order = _map["order"].(string)
+	}
+	if _map["page"] != nil {
+		sql.Page = _map["page"].(int)
+	}
+	if _map["size"] != nil {
+		sql.Size = _map["size"].(int)
+	}
+	if _map["company_id"] != nil {
+		sql.Company_id = _map["company_id"].(int)
+	}
+	if _map["params"] != nil {
+		sql.Params = _map["params"].(string)
+	}
 
 	return sql
 
