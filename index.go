@@ -83,7 +83,7 @@ func (_sql SqlStruct) ToUpdate() string {
 	// 这里规定更新必须加where
 	sql := fmt.Sprintf(`update %s set %s `, _sql.Tabel_name, _sql.Update_value)
 	if _sql.Where != "" {
-		sql += " where " + _sql.Where
+		sql += " " + _sql.Where
 	} else {
 		sql = "这里规定更新必须加where"
 	}
