@@ -93,14 +93,16 @@ func (_sql SqlStruct) ToUpdate() string {
 
 func (_sql SqlStruct) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"values":     _sql.Values,
-		"tabel_name": _sql.Tabel_name,
-		"where":      _sql.Where,
-		"order":      _sql.Order,
-		"page":       _sql.Page,
-		"size":       _sql.Size,
-		"company_id": _sql.Company_id,
-		"params":     _sql.Params,
+		"values":       _sql.Values,
+		"tabel_name":   _sql.Tabel_name,
+		"where":        _sql.Where,
+		"order":        _sql.Order,
+		"page":         _sql.Page,
+		"size":         _sql.Size,
+		"company_id":   _sql.Company_id,
+		"params":       _sql.Params,
+		"insert_value": _sql.Insert_value,
+		"update_value": _sql.Update_value,
 	}
 }
 
@@ -141,7 +143,12 @@ func (_sql SqlStruct) MapTo(_map map[string]interface{}) SqlStruct {
 	if _map["params"] != nil {
 		sql.Params = _map["params"].(string)
 	}
-
+	if _map["insert_value"] != nil {
+		sql.Insert_value = _map["insert_value"].(string)
+	}
+	if _map["update_value"] != nil {
+		sql.Update_value = _map["update_value"].(string)
+	}
 	return sql
 
 }
