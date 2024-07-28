@@ -200,7 +200,7 @@ func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
 	} else {
 
 		(*res)["state"] = 401
-		(*res)["err"] = "this service is not online"
+		(*res)["err"] = method.Chinese_name + "this service is not online"
 		(*res)["data"] = []byte("[]")
 	}
 

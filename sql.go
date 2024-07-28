@@ -373,7 +373,7 @@ func CallOther(Rpc *RPC, method RpcMethod) (interface{}, error) {
 		return []map[string]interface{}{}, errors.New("数据异常")
 	}
 
-	var list_sql []map[string]interface{}
+	var list_sql interface{}
 	json.Unmarshal(data["data"].([]byte), &list_sql)
 	if data["err"] == nil {
 		return list_sql, nil
