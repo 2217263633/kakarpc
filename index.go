@@ -47,14 +47,15 @@ var RpcServer = map[string]*YamlStruct{}
 var RpcClient = map[string]*RpcClientType{}
 
 type SqlStruct struct {
-	Values     string // 不要写 select
-	Tabel_name string // 不要写 from
-	Where      string // 自己写 where 或者 on
-	Order      string // 要写 order by
-	Page       int    // 自己写页码
-	Size       int    // 自己写size大小
-	Company_id int    // 公司id
-	Params     string // 自己写参数
+	Values       string // 不要写 select
+	Tabel_name   string // 不要写 from
+	Where        string // 自己写 where 或者 on
+	Order        string // 要写 order by
+	Page         int    // 自己写页码
+	Size         int    // 自己写size大小
+	Company_id   int    // 公司id
+	Params       string // 自己写参数
+	Insert_value string // 插入数据的 insert_value
 }
 
 func (_sql SqlStruct) ToString() string {
@@ -73,7 +74,7 @@ func (_sql SqlStruct) ToString() string {
 }
 
 func (_sql SqlStruct) ToInsert() string {
-	sql := fmt.Sprintf(`insert into %s (%s) values (%s)`, _sql.Tabel_name, _sql.Params, _sql.Values)
+	sql := fmt.Sprintf(`insert into %s (%s) values (%s)`, _sql.Tabel_name, _sql.Params, _sql.Insert_value)
 	return sql
 }
 
