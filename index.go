@@ -91,6 +91,17 @@ func (_sql SqlStruct) ToUpdate() string {
 	return sql
 }
 
+func (_sql SqlStruct) ToDelete() string {
+	sql := fmt.Sprintf(`delete from %s `, _sql.Tabel_name)
+	if _sql.Where != "" {
+		sql += " " + _sql.Where
+	} else {
+		sql = "这里规定删除必须加where"
+	}
+
+	return sql
+}
+
 func (_sql SqlStruct) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"values":       _sql.Values,
