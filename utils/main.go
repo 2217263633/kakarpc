@@ -133,6 +133,77 @@ func (utils CusUtils) RecursionList(arr []map[string]interface{}, match string, 
 
 }
 
+// 作为补充 会以第一个name为开始寻找
+// 一种递归的方法，不是特别好
+func ReciursionName(arr []map[string]interface{}, id string, parent_id string, name string) map[string]interface{} {
+	_map := make(map[string]interface{})
+	for _, v := range arr {
+		if v["name"] == name {
+			_map = v
+			break
+		}
+	}
+
+	if len(_map) == 0 {
+		return _map
+	}
+
+	for _, v := range arr {
+		if v[parent_id] == _map[id] {
+			_sd := make([]map[string]interface{}, 0)
+			if _map["children"] != nil {
+				_sd = _map["children"].([]map[string]interface{})
+			}
+			_sd = append(_sd, ReciursionName(arr, id, parent_id, v["name"].(string)))
+			_map["children"] = _sd
+		}
+	}
+
+	return _map
+}
+
+// 作为补充 会以第一个name为开始寻找
+func RecursionListName(arr []map[string]interface{}, match string, goal string, name string) []map[string]interface{} {
+	// var _tempArrs []map[string]interface{} = make([]map[string]interface{}, 0)
+	_app := make([]map[string]interface{}, 0)
+	for _, v := range arr {
+		if v["name"] != name {
+			continue
+		}
+		// logger.Info(v["name"])
+		_app = append(_app, v)
+		// v["children"] = make([]map[string]interface{}, 0)
+		for _, j := range arr {
+			if j[goal] == v[match] {
+
+				if v["children"] == nil {
+					var children []map[string]interface{} = make([]map[string]interface{}, 0)
+					children = append(children, j)
+					v["children"] = children
+				} else {
+					v["children"] = append(v["children"].([]map[string]interface{}), j)
+				}
+				// // break
+			} else {
+				j["isdelete"] = true
+			}
+		}
+	}
+
+	for i := len(arr) - 1; i >= 0; i-- {
+		if arr[i]["isdelete"] == true {
+			arr = append(arr[:i], arr[i+1:]...)
+		}
+	}
+
+	if len(_app) > 0 {
+		_app[0]["children"] = arr
+	}
+
+	return _app
+
+}
+
 func (utils CusUtils) Remove(arr []map[string]interface{}, index int) []map[string]interface{} {
 	return append(arr[:index], arr[index+1:]...)
 }
