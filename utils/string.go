@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -114,6 +116,28 @@ func (utils CusUtils) IncludeAdd(sqlStr string, reviceStrs string) string {
 		}
 	}
 	return vals
+}
+
+func (utils CusUtils) StrToInt(str string) int {
+	_in, _ := strconv.Atoi(str)
+	return _in
+}
+
+func (utils CusUtils) IncludeAddArr(sqlStr string, reviceStrs []int) []int {
+	_arrStr := strings.Split(sqlStr, ",")
+	_resice := make([]int, 0)
+	for _, str := range _arrStr {
+		_resice = append(_resice, utils.StrToInt(str))
+	}
+
+	for _, reStr := range reviceStrs {
+		if utils.IndexOf(_arrStr, fmt.Sprintf("%d", reStr)) == -1 {
+
+			_resice = append(_resice, reStr)
+		}
+	}
+
+	return _resice
 }
 
 func ContainsStr(arr []string, val string) int {
