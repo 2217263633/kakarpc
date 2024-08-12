@@ -58,24 +58,23 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 	RpcServer[req.Chinese_name] = &YamlStruct{Server: req}
 	// rpc 端口
 	for {
-		if judgePort(r.Conect_port) {
+		if !judgePort(r.Conect_port) {
 			res.Port = r.Conect_port
 			break
 		}
 
 		r.Conect_port += 1
 	}
-
+	r.Conect_port += 1
 	// swagger端口
 	for {
-		if judgePort(r.Conect_port) {
+		if !judgePort(r.Conect_port) {
 			res.Swag_port = r.Conect_port
 			break
 		}
 
 		r.Conect_port += 1
 	}
-
 	time.AfterFunc(time.Second*5, func() {
 
 		if RpcClient[req.Chinese_name] == nil {
