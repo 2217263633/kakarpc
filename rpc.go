@@ -1,7 +1,6 @@
 package myrpc
 
 import (
-	"context"
 	"fmt"
 	"io/fs"
 	"net"
@@ -10,7 +9,6 @@ import (
 	"net/rpc"
 	"net/url"
 	"os"
-	"os/signal"
 	"reflect"
 	"strconv"
 	"strings"
@@ -60,26 +58,29 @@ func judgePort(port int) bool {
 func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 	RpcServer[req.Chinese_name] = &YamlStruct{Server: req}
 	// rpc 端口
-	for {
-		if !judgePort(r.Conect_port) {
-			res.Port = r.Conect_port
-			req.Port = r.Conect_port
-			break
-		}
+	if req.Port == 0 {
+		// 临时分配端口
+		for {
+			if !judgePort(r.Conect_port) {
+				res.Port = r.Conect_port
+				req.Port = r.Conect_port
+				break
+			}
 
+			r.Conect_port += 1
+		}
 		r.Conect_port += 1
 	}
-
-	r.Conect_port += 1
-	// swagger端口
-	for {
-		if !judgePort(r.Conect_port) {
-			res.Swag_port = r.Conect_port
-			req.Swag_port = r.Conect_port
-			break
+	if req.Swag_port == 0 {
+		// swagger端口
+		for {
+			if !judgePort(r.Conect_port) {
+				res.Swag_port = r.Conect_port
+				req.Swag_port = r.Conect_port
+				break
+			}
+			r.Conect_port += 1
 		}
-
-		r.Conect_port += 1
 	}
 
 	if r.Conect_port > 50000 {
@@ -287,16 +288,6 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 				err := _rpc.Client.Call("RPC.IsAlive", yaml.Chinese_name, &reply)
 				if err != nil {
 					logger.Error("主进程已掉线，等待重连%v", err)
-					quit := make(chan os.Signal, 1)
-					// signal.Notify(quit, os.Interrupt)
-					signal.Notify(quit, os.Interrupt)
-					<-quit
-					logger.Info("shutdown server")
-					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-					defer cancel()
-					if err := con.Srv.Shutdown(ctx); err != nil {
-						logger.Info("Server Shutdown:", err)
-					}
 					con.GoRpc(yaml, _rpc)
 				}
 			}
