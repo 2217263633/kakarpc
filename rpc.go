@@ -3,6 +3,7 @@ package myrpc
 import (
 	"fmt"
 	"io/fs"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/rpc"
@@ -22,11 +23,12 @@ import (
 )
 
 type RPC struct {
-	Client    *rpc.Client `json:"client"`
-	Count     int         `json:"count"`     // 重联计数器
-	R         *gin.Engine `json:"r"`         // gin框架
-	Conn      any         `json:"conn"`      // 连接注册中心
-	Swag_port int         `json:"swag_port"` // swagger端口
+	Client      *rpc.Client `json:"client"`
+	Count       int         `json:"count"`       // 重联计数器
+	R           *gin.Engine `json:"r"`           // gin框架
+	Conn        any         `json:"conn"`        // 连接注册中心
+	Swag_port   int         `json:"swag_port"`   // swagger端口
+	Conect_port int         `json:"conect_port"` // 远程方调用接口时候，需要从自己这里进行返回
 }
 
 // 是否存活
@@ -41,9 +43,38 @@ func (con *RPC) IsAlive(req string, res *bool) error {
 	return nil
 }
 
+func judgePort(port int) bool {
+	// 判断端口是否被占用
+	listenner, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
+	if err != nil {
+		return true
+	}
+	defer listenner.Close()
+	return false
+}
+
 // 注册
 func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 	RpcServer[req.Chinese_name] = &YamlStruct{Server: req}
+	// rpc 端口
+	for {
+		if judgePort(r.Conect_port) {
+			res.Port = r.Conect_port
+			break
+		}
+
+		r.Conect_port += 1
+	}
+
+	// swagger端口
+	for {
+		if judgePort(r.Conect_port) {
+			res.Swag_port = r.Conect_port
+			break
+		}
+
+		r.Conect_port += 1
+	}
 
 	time.AfterFunc(time.Second*5, func() {
 
