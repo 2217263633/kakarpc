@@ -1,6 +1,7 @@
 package myrpc
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"net"
@@ -9,6 +10,7 @@ import (
 	"net/rpc"
 	"net/url"
 	"os"
+	"os/signal"
 	"reflect"
 	"strconv"
 	"strings"
@@ -23,12 +25,13 @@ import (
 )
 
 type RPC struct {
-	Client      *rpc.Client `json:"client"`
-	Count       int         `json:"count"`       // 重联计数器
-	R           *gin.Engine `json:"r"`           // gin框架
-	Conn        any         `json:"conn"`        // 连接注册中心
-	Swag_port   int         `json:"swag_port"`   // swagger端口
-	Conect_port int         `json:"conect_port"` // 远程方调用接口时候，需要从自己这里进行返回
+	Client      *rpc.Client  `json:"client"`
+	Count       int          `json:"count"`       // 重联计数器
+	R           *gin.Engine  `json:"r"`           // gin框架
+	Conn        any          `json:"conn"`        // 连接注册中心
+	Swag_port   int          `json:"swag_port"`   // swagger端口
+	Conect_port int          `json:"conect_port"` // 远程方调用接口时候，需要从自己这里进行返回
+	Srv         *http.Server `json:"srv"`         // 关闭gin的端口
 }
 
 // 是否存活
@@ -60,21 +63,29 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 	for {
 		if !judgePort(r.Conect_port) {
 			res.Port = r.Conect_port
+			req.Port = r.Conect_port
 			break
 		}
 
 		r.Conect_port += 1
 	}
+
 	r.Conect_port += 1
 	// swagger端口
 	for {
 		if !judgePort(r.Conect_port) {
 			res.Swag_port = r.Conect_port
+			req.Swag_port = r.Conect_port
 			break
 		}
 
 		r.Conect_port += 1
 	}
+
+	if r.Conect_port > 50000 {
+		logger.Error("端口已满，请检查服务器")
+	}
+
 	time.AfterFunc(time.Second*5, func() {
 
 		if RpcClient[req.Chinese_name] == nil {
@@ -276,13 +287,23 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 				err := _rpc.Client.Call("RPC.IsAlive", yaml.Chinese_name, &reply)
 				if err != nil {
 					logger.Error("主进程已掉线，等待重连%v", err)
+					quit := make(chan os.Signal, 1)
+					// signal.Notify(quit, os.Interrupt)
+					signal.Notify(quit, os.Interrupt)
+					<-quit
+					logger.Info("shutdown server")
+					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+					defer cancel()
+					if err := con.Srv.Shutdown(ctx); err != nil {
+						logger.Info("Server Shutdown:", err)
+					}
 					con.GoRpc(yaml, _rpc)
 				}
 			}
 
 		})
 		ti.StartAsync()
-		con.ginInit(_rpc.R, yaml.Swag_port, yaml.Name)
+		con.Srv = con.ginInit(_rpc.R, yaml.Swag_port, yaml.Name)
 		con.init(_rpc.Conn, ":"+strconv.Itoa(yaml.Port))
 	} else {
 		_rpc.Count += 1
@@ -290,10 +311,21 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 
 }
 
-func (con *RPC) ginInit(r *gin.Engine, port int, name string) {
+func (con *RPC) ginInit(r *gin.Engine, port int, name string) *http.Server {
 	r.GET("/"+name+"/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, ginSwagger.DocExpansion("none")))
 	logger.Info("gin run on port:", port)
-	go r.Run(fmt.Sprintf(":%d", port))
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: r,
+	}
+	go func() {
+		// 服务连接
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Info("listen: %s\n", err)
+		}
+	}()
+	return srv
+	// go r.Run(fmt.Sprintf(":%d", port))
 }
 
 var MyRpc = &RPC{}
