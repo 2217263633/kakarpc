@@ -94,6 +94,25 @@ func (utils CusUtils) ListLog(fields []string, arrs []any) string {
 	return tring
 }
 
+// Query
+func (utils CusUtils) ListToQuery(fields []string, arrs []any) string {
+	var tring = ""
+	if len(fields) != len(arrs) {
+		return tring
+	}
+	arrStr := utils.ListToListStr(arrs)
+	// logger.Info(fields, arrStr)
+	for i := 0; i < len(fields); i++ {
+		// logger.Info(fields[i], arrStr[i])
+		tring += " and " + fields[i] + "=" + arrStr[i] + " "
+	}
+
+	if len(tring) > 0 {
+		tring = tring[:len(tring)-1]
+	}
+	return tring
+}
+
 func (utils CusUtils) MergeMap(x map[string]interface{}, y map[string]interface{}) map[string]interface{} {
 	n := make(map[string]interface{})
 	for i, v := range x {
