@@ -60,6 +60,9 @@ type SqlStruct struct {
 }
 
 func (_sql SqlStruct) ToString() string {
+	if _sql.Values == "" {
+		_sql.Values = "*"
+	}
 	sql := fmt.Sprintf(`select %s from %s `,
 		_sql.Values, _sql.Tabel_name)
 
