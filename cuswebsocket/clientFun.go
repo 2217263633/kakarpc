@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/2217263633/kakarpc/cusrequest"
-	"github.com/2217263633/kakarpc/rpc"
+
 	"github.com/wonderivan/logger"
 )
 
@@ -30,7 +30,7 @@ func Init() *Cuswebsocket {
 // }
 
 // 主要是发送通知  user_id 是发送人
-func (c *Cuswebsocket) GetClient(_msg WsMessage, token string, user_id int) error {
+func (c *Cuswebsocket) GetClient(rpc *RPC, _msg WsMessage, token string, user_id int) error {
 	senUrl := "https://chat.kasiasafe.top:8091/api/v1/ws/sendMsg"
 	if os.Args[len(os.Args)-1] == "test" {
 		senUrl = "http://testqiye.kasiasafe.top:8091/api/v1/ws/sendMsg"
@@ -61,22 +61,20 @@ func (c *Cuswebsocket) GetClient(_msg WsMessage, token string, user_id int) erro
 			CallUrl:  _msg.CallUrl,
 		})
 		_revice_user_id, _ := strconv.Atoi(_msg.UserId)
-		c.NotFind(user_id, _revice_user_id, string(resp), "")
+		c.NotFind(rpc, user_id, _revice_user_id, string(resp), "")
 		logger.Info("已把离线消息存入数据库，等待他上线查看")
 	}
 
 	return err
 }
 
-var Rpc = &rpc.RPC{}
+func (c *Cuswebsocket) NotFind(rpc *RPC, userId int, send_user_id int, data string, parameter string) error {
 
-func (c *Cuswebsocket) NotFind(userId int, send_user_id int, data string, parameter string) error {
-
-	sql := rpc.SqlStruct{}
+	sql := SqlStruct{}
 	sql.Params = "user_id,data,parameter"
 	sql.Insert_value = fmt.Sprintf("%d,'%s','%s'", send_user_id, data, parameter)
 	sql.Company_id = userId
-	_, err := rpc.CallOther(Rpc, rpc.RpcMethod{
+	_, err := CallOther(rpc, RpcMethod{
 		Chinese_name: "消息",
 		Method:       "MsgService.PostItem",
 		Param:        sql.ToMap(),

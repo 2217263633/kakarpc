@@ -74,3 +74,31 @@ var Manager ClientManager = ClientManager{
 func InitManger() ClientManager {
 	return Manager
 }
+
+type SqlStruct struct {
+	Values       string // 不要写 select
+	Tabel_name   string // 不要写 from
+	Where        string // 自己写 where 或者 on
+	Order        string // 要写 order by
+	Page         int    // 自己写页码
+	Size         int    // 自己写size大小
+	Company_id   int    // 公司id
+	Params       string // 自己写参数
+	Insert_value string // 插入数据的 insert_value
+	Update_value string // 更新数据的 update_value
+}
+
+func (_sql SqlStruct) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"values":       _sql.Values,
+		"tabel_name":   _sql.Tabel_name,
+		"where":        _sql.Where,
+		"order":        _sql.Order,
+		"page":         _sql.Page,
+		"size":         _sql.Size,
+		"company_id":   _sql.Company_id,
+		"params":       _sql.Params,
+		"insert_value": _sql.Insert_value,
+		"update_value": _sql.Update_value,
+	}
+}
