@@ -91,9 +91,10 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 
 		if RpcClient[req.Chinese_name] == nil {
 			RpcClient[req.Chinese_name] = &RpcClientType{
-				Heart: time.Now(),
-				Addr:  "127.0.0.1:" + strconv.Itoa(req.Swag_port),
-				Name:  strings.Split(req.Name, ".")[0],
+				Heart:  time.Now(),
+				Addr:   "127.0.0.1:" + strconv.Itoa(req.Swag_port),
+				Name:   strings.Split(req.Name, ".")[0],
+				Router: req.Router,
 			}
 			logger.Info("转发服务", "/"+req.Name)
 			centor.R.GET("/"+req.Name+"/*any", func(c *gin.Context) {
