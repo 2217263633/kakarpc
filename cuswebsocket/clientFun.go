@@ -12,19 +12,21 @@ import (
 	"github.com/wonderivan/logger"
 )
 
-func FindUser(UserId int) *Client {
-	var conn *Client
-	for _, _conn := range Manager.Clients {
-		if _conn.UserId == UserId {
-			conn = _conn
-			break
-		}
-	}
-	return conn
-}
+type Cuswebsocket struct{}
+
+// func FindUser(UserId int) *Client {
+// 	var conn *Client
+// 	for _, _conn := range Manager.Clients {
+// 		if _conn.UserId == UserId {
+// 			conn = _conn
+// 			break
+// 		}
+// 	}
+// 	return conn
+// }
 
 // 主要是发送通知  user_id 是发送人
-func GetClient(_msg WsMessage, token string, user_id int) error {
+func (c *Cuswebsocket) GetClient(_msg WsMessage, token string, user_id int) error {
 	senUrl := "https://chat.kasiasafe.top:8091/api/v1/ws/sendMsg"
 	if os.Args[len(os.Args)-1] == "test" {
 		senUrl = "http://testqiye.kasiasafe.top:8091/api/v1/ws/sendMsg"
@@ -55,7 +57,7 @@ func GetClient(_msg WsMessage, token string, user_id int) error {
 			CallUrl:  _msg.CallUrl,
 		})
 		_revice_user_id, _ := strconv.Atoi(_msg.UserId)
-		NotFind(user_id, _revice_user_id, string(resp), "")
+		c.NotFind(user_id, _revice_user_id, string(resp), "")
 		logger.Info("已把离线消息存入数据库，等待他上线查看")
 	}
 
@@ -64,7 +66,7 @@ func GetClient(_msg WsMessage, token string, user_id int) error {
 
 var Rpc myrpc.RPC = myrpc.RPC{}
 
-func NotFind(userId int, send_user_id int, data string, parameter string) error {
+func (c *Cuswebsocket) NotFind(userId int, send_user_id int, data string, parameter string) error {
 
 	sql := myrpc.SqlStruct{}
 	sql.Params = "user_id,data,parameter"
