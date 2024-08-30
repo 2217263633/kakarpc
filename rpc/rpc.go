@@ -1,4 +1,4 @@
-package myrpc
+package rpc
 
 import (
 	"fmt"
@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/2217263633/kakarpc/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
 	swaggerfiles "github.com/swaggo/files"
@@ -319,6 +318,3 @@ func (con *RPC) ginInit(r *gin.Engine, port int, name string) *http.Server {
 	return srv
 	// go r.Run(fmt.Sprintf(":%d", port))
 }
-
-var MyRpc = &RPC{}
-var Utils *utils.CusUtils = utils.UtilsInit()

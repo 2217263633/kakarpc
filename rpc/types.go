@@ -1,4 +1,4 @@
-package myrpc
+package rpc
 
 import (
 	"bytes"

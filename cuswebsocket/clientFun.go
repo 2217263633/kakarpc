@@ -7,12 +7,16 @@ import (
 	"os"
 	"strconv"
 
-	myrpc "github.com/2217263633/kakarpc"
 	"github.com/2217263633/kakarpc/cusrequest"
+	"github.com/2217263633/kakarpc/rpc"
 	"github.com/wonderivan/logger"
 )
 
 type Cuswebsocket struct{}
+
+func Init() *Cuswebsocket {
+	return &Cuswebsocket{}
+}
 
 // func FindUser(UserId int) *Client {
 // 	var conn *Client
@@ -64,15 +68,15 @@ func (c *Cuswebsocket) GetClient(_msg WsMessage, token string, user_id int) erro
 	return err
 }
 
-var Rpc myrpc.RPC = myrpc.RPC{}
+var Rpc = &rpc.RPC{}
 
 func (c *Cuswebsocket) NotFind(userId int, send_user_id int, data string, parameter string) error {
 
-	sql := myrpc.SqlStruct{}
+	sql := rpc.SqlStruct{}
 	sql.Params = "user_id,data,parameter"
 	sql.Insert_value = fmt.Sprintf("%d,'%s','%s'", send_user_id, data, parameter)
 	sql.Company_id = userId
-	_, err := myrpc.CallOther(&Rpc, myrpc.RpcMethod{
+	_, err := rpc.CallOther(Rpc, rpc.RpcMethod{
 		Chinese_name: "消息",
 		Method:       "MsgService.PostItem",
 		Param:        sql.ToMap(),
