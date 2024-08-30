@@ -12,7 +12,10 @@ import (
 	"github.com/wonderivan/logger"
 )
 
-type Cuswebsocket struct{}
+type Cuswebsocket struct {
+	Wsmessage WsMessage `json:"wsmessage"` //transfer message
+
+}
 
 func Init() *Cuswebsocket {
 	return &Cuswebsocket{}
