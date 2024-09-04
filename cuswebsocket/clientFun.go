@@ -73,6 +73,51 @@ func (c *Cuswebsocket) GetClient(rpc *types.RPC, _msg WsMessage, token string, u
 	return err
 }
 
+func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, company_id int, user_ids []int) error {
+	senUrl := "https://chat.kasiasafe.top:8091/api/v1/ws/sendMsg"
+	if os.Args[len(os.Args)-1] == "test" {
+		senUrl = "http://testqiye.kasiasafe.top:8091/api/v1/ws/sendMsg"
+	} else if os.Args[len(os.Args)-1] == "server" {
+		senUrl = "https://chat.kasiasafe.top:8091/api/v1/ws/sendMsg"
+	} else {
+		senUrl = "http://127.0.0.1:8091/api/v1/ws/sendMsg"
+	}
+	if _msg.Business == 0 {
+		_msg.Business = 1
+	}
+	if _msg.Type == 0 {
+		_msg.Type = 4
+	}
+	user_ids_str := []string{}
+	for _, user_id := range user_ids {
+		user_ids_str = append(user_ids_str, strconv.Itoa(user_id))
+	}
+
+	_, err := cusrequest.Request(senUrl, cusrequest.Post, map[string]interface{}{
+		"business": _msg.Business,
+		"data":     _msg.Data,
+		"userIds":  user_ids_str,
+		"type":     _msg.Type,
+		"callUrl":  _msg.CallUrl,
+	}, token)
+	if err != nil {
+		// logger.Info(_msg.UserId, "不在线", err)
+		resp, _ := json.Marshal(&WsMessage{
+			Data:     _msg.Data,
+			Business: _msg.Business,
+			UserId:   _msg.UserId,
+			CallUrl:  _msg.CallUrl,
+		})
+		// _revice_user_id, _ := strconv.Atoi(_msg.UserId)
+		// 0代表系统发送的
+		c.NotFindCompany(rpc, company_id, 0, string(resp), "")
+		logger.Info("已把离线消息存入数据库，等待他上线查看")
+		return err
+	}
+
+	return nil
+}
+
 var Mysql = sql.Init()
 
 func (c *Cuswebsocket) NotFind(rpc *types.RPC, userId int, send_user_id int, data string, parameter string) error {
@@ -85,6 +130,22 @@ func (c *Cuswebsocket) NotFind(rpc *types.RPC, userId int, send_user_id int, dat
 	_, err := Mysql.CallOther(rpc, types.RpcMethod{
 		Chinese_name: "消息",
 		Method:       "MsgService.PostItem",
+		Param:        _sql.ToMap(),
+	})
+	if err != nil {
+		logger.Error(err)
+	}
+	return err
+}
+
+func (c *Cuswebsocket) NotFindCompany(rpc *types.RPC, company_id int, send_user_id int, data string, parameter string) error {
+	_sql := SqlStruct{}
+	_sql.Params = "user_id,data,parameter"
+	_sql.Insert_value = fmt.Sprintf("%d,'%s','%s'", send_user_id, data, parameter)
+	_sql.Company_id = company_id
+	_, err := Mysql.CallOther(rpc, types.RpcMethod{
+		Chinese_name: "消息",
+		Method:       "MsgService.PostGetCompany_msg",
 		Param:        _sql.ToMap(),
 	})
 	if err != nil {
