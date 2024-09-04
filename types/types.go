@@ -10,6 +10,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type TypeStruct struct {
+	RpcMethod
+}
+
+func Init() *TypeStruct {
+
+	return &TypeStruct{}
+}
+
+func NewRpcMethod() *RpcMethod {
+	f := new(RpcMethod)
+	return f
+}
+
 type ModeType int
 
 const (
