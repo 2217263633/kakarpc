@@ -1,4 +1,4 @@
-package myrpc
+package sql
 
 import (
 	"encoding/json"
@@ -9,12 +9,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/2217263633/kakarpc/gal"
+	"github.com/2217263633/kakarpc/types"
 	"github.com/wonderivan/logger"
 )
 
-func QuerySql(Rpc *RPC, sql string) ([]map[string]interface{}, error) {
+type SqlStruct struct{}
+
+func Init() *SqlStruct {
+	return &SqlStruct{}
+}
+
+func (u *SqlStruct) QuerySql(sql string) ([]map[string]interface{}, error) {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.QueryData",
 		Param:        sql}, &data)
@@ -34,9 +42,9 @@ func QuerySql(Rpc *RPC, sql string) ([]map[string]interface{}, error) {
 	return list_sql, data["err"].(error)
 }
 
-func JudgeTable(Rpc *RPC, table string) ([]map[string]interface{}, error) {
+func (u *SqlStruct) JudgeTable(table string) ([]map[string]interface{}, error) {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.JudgeTable",
 		Param:        table}, &data)
@@ -53,10 +61,10 @@ func JudgeTable(Rpc *RPC, table string) ([]map[string]interface{}, error) {
 }
 
 // resu ,total,size,error
-func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, int, int, error) {
+func (u *SqlStruct) PageSql(sql types.SqlStruct) ([]map[string]interface{}, int, int, error) {
 	map_sql := sql.ToMap()
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.PageSql",
 		Param:        map_sql}, &data)
@@ -76,9 +84,9 @@ func PageSql(Rpc *RPC, sql SqlStruct) ([]map[string]interface{}, int, int, error
 	return list_sql, data["total"].(int), data["size"].(int), nil
 }
 
-func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
+func (u *SqlStruct) CallToken(token string) ([]map[string]interface{}, error) {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "用户服务",
 		Method:       "UserService.ParseToken",
 		Param:        token}, &data)
@@ -98,9 +106,9 @@ func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
 	return list_sql, data["err"].(error)
 }
 
-func CallAny(Rpc *RPC, method string, param string, chinese_name string) (interface{}, error) {
+func (u *SqlStruct) CallAny(method string, param string, chinese_name string) (interface{}, error) {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: chinese_name,
 		Method:       method,
 		Param:        param}, &data)
@@ -120,7 +128,7 @@ func CallAny(Rpc *RPC, method string, param string, chinese_name string) (interf
 	return list_sql, data["err"].(error)
 }
 
-func ErrDeal(err error, res *map[string]interface{}) {
+func (u *SqlStruct) ErrDeal(err error, res *map[string]interface{}) {
 	if err != nil {
 		(*res)["state"] = 401
 		// 因为rpc的原因 必须传string
@@ -130,7 +138,7 @@ func ErrDeal(err error, res *map[string]interface{}) {
 	}
 }
 
-func StructToSql(fileStruct any) ([]string, []interface{}) {
+func (u *SqlStruct) StructToSql(fileStruct any) ([]string, []interface{}) {
 	t := reflect.TypeOf(fileStruct)
 	value := reflect.ValueOf(fileStruct)
 
@@ -216,7 +224,7 @@ func StructToSql(fileStruct any) ([]string, []interface{}) {
 	return typeStr, valueStr
 }
 
-func StructToSql2(fileStruct any, obj map[string]interface{}) ([]string, []interface{}) {
+func (u *SqlStruct) StructToSql2(fileStruct any, obj map[string]interface{}) ([]string, []interface{}) {
 	var typeStr []string = make([]string, 0)
 	var valueStr []interface{} = make([]interface{}, 0)
 	t := reflect.TypeOf(fileStruct)
@@ -254,9 +262,9 @@ func StructToSql2(fileStruct any, obj map[string]interface{}) ([]string, []inter
 	return typeStr, valueStr
 }
 
-func InsertTable(Rpc *RPC, sql string) error {
+func (u *SqlStruct) InsertTable(sql string) error {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.InsertData",
 		Param:        sql}, &data)
@@ -271,9 +279,9 @@ func InsertTable(Rpc *RPC, sql string) error {
 	return nil
 }
 
-func InsertTableId(Rpc *RPC, sql string) (int, error) {
+func (u *SqlStruct) InsertTableId(sql string) (int, error) {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.InsertTableId",
 		Param:        sql}, &data)
@@ -292,9 +300,9 @@ func InsertTableId(Rpc *RPC, sql string) (int, error) {
 	return int(list_sql.(float64)), nil
 }
 
-func QueryIdlimit1(Rpc *RPC, tableName string) ([]map[string]interface{}, error) {
+func (u *SqlStruct) QueryIdlimit1(tableName string) ([]map[string]interface{}, error) {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.QueryIdlimit1",
 		Param:        tableName}, &data)
@@ -314,9 +322,9 @@ func QueryIdlimit1(Rpc *RPC, tableName string) ([]map[string]interface{}, error)
 	return list_sql, nil
 }
 
-func CreateTable(Rpc *RPC, sql string) error {
+func (u *SqlStruct) CreateTable(sql string) error {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.CreateTable",
 		Param:        sql}, &data)
@@ -331,9 +339,9 @@ func CreateTable(Rpc *RPC, sql string) error {
 	return nil
 }
 
-func UpdateTable(Rpc *RPC, sql string) error {
+func (u *SqlStruct) UpdateTable(sql string) error {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.UpdateTable",
 		Param:        sql}, &data)
@@ -348,9 +356,9 @@ func UpdateTable(Rpc *RPC, sql string) error {
 	return nil
 }
 
-func DeleteTable(Rpc *RPC, sql string) error {
+func (u *SqlStruct) DeleteTable(sql string) error {
 	var data map[string]interface{}
-	Rpc.Client.Call("RPC.Call", RpcMethod{
+	gal.MyRpc.Client.Call("RPC.Call", types.RpcMethod{
 		Chinese_name: "数据库调用",
 		Method:       "MysqlService.DeleteData",
 		Param:        sql}, &data)
@@ -365,9 +373,9 @@ func DeleteTable(Rpc *RPC, sql string) error {
 }
 
 // 特定的调用 Rpc 不需要在传，本身意义不大
-func CallOther(Rpc *any, method RpcMethod) (interface{}, error) {
+func (u *SqlStruct) CallOther(method types.RpcMethod) (interface{}, error) {
 	var data map[string]interface{}
-	MyRpc.Client.Call("RPC.Call", method, &data)
+	gal.MyRpc.Client.Call("RPC.Call", method, &data)
 
 	if data == nil || data["state"] == nil {
 		return []map[string]interface{}{}, errors.New("数据异常")

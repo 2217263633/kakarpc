@@ -55,6 +55,9 @@ func judgePort(port int) bool {
 
 // 注册
 func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
+	if req.Chinese_name == "" {
+		return fmt.Errorf("中文名不能为空,Chinese_name")
+	}
 	RpcServer[req.Chinese_name] = &YamlStruct{Server: req}
 	// rpc 端口
 	if req.Port == 0 {
