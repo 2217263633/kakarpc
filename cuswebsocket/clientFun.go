@@ -73,7 +73,7 @@ func (c *Cuswebsocket) GetClient(rpc *types.RPC, _msg WsMessage, token string, u
 	return err
 }
 
-func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, company_id int, user_ids []int) error {
+func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, company_id int, user_id int) error {
 	senUrl := "https://chat.kasiasafe.top:8091/api/v1/ws/sendMsg"
 	if os.Args[len(os.Args)-1] == "test" {
 		senUrl = "http://testqiye.kasiasafe.top:8091/api/v1/ws/sendMsg"
@@ -88,15 +88,11 @@ func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, com
 	if _msg.Type == 0 {
 		_msg.Type = 4
 	}
-	user_ids_str := []string{}
-	for _, user_id := range user_ids {
-		user_ids_str = append(user_ids_str, strconv.Itoa(user_id))
-	}
 
 	_, err := cusrequest.Request(senUrl, cusrequest.Post, map[string]interface{}{
 		"business": _msg.Business,
 		"data":     _msg.Data,
-		"userIds":  user_ids_str,
+		"userIds":  _msg.User_ids,
 		"type":     _msg.Type,
 		"callUrl":  _msg.CallUrl,
 	}, token)
@@ -108,9 +104,7 @@ func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, com
 			UserId:   _msg.UserId,
 			CallUrl:  _msg.CallUrl,
 		})
-		// _revice_user_id, _ := strconv.Atoi(_msg.UserId)
-		// 0代表系统发送的
-		c.NotFindCompany(rpc, company_id, 0, string(resp), "")
+		c.NotFindCompany(rpc, company_id, user_id, string(resp), "")
 		logger.Info("已把离线消息存入数据库，等待他上线查看")
 		return err
 	}

@@ -25,8 +25,9 @@ const (
 type WsMessage struct {
 	Type     FishType     `json:"type"` // socket 交互使用的
 	Data     interface{}  `json:"data"`
-	UserId   string       `json:"userId"`
-	Business BusinessType `json:"business"` // 0 chat  1 work 2 dualprevent 3 webrtc 4 demind 5 bigdanger
+	UserId   string       `json:"userId"`   //发送给谁
+	User_ids []string     `json:"user_ids"` //发送给一群人
+	Business BusinessType `json:"business"` //0 chat  1 work 2 dualprevent 3 webrtc 4 demind 5 bigdanger
 	CallUrl  interface{}  `json:"callUrl"`
 }
 
