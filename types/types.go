@@ -11,11 +11,10 @@ import (
 )
 
 type TypeStruct struct {
-	RpcMethod
+	*RpcMethod
 }
 
 func Init() *TypeStruct {
-
 	return &TypeStruct{}
 }
 
