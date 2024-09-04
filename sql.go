@@ -365,7 +365,7 @@ func DeleteTable(Rpc *RPC, sql string) error {
 }
 
 // 特定的调用 Rpc 不需要在传，本身意义不大
-func CallOther(Rpc *any, method RpcMethod) (interface{}, error) {
+func CallOther(Rpc *RPC, method RpcMethod) (interface{}, error) {
 	var data map[string]interface{}
 	MyRpc.Client.Call("RPC.Call", method, &data)
 
