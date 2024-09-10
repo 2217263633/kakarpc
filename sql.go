@@ -379,7 +379,7 @@ func CallOther(Rpc *RPC, method RpcMethod) (interface{}, error) {
 	}
 	data["data"] = list_sql
 	if data["err"] == nil {
-		return list_sql, nil
+		return data, nil
 	}
 	if fmt.Sprintf("%T", data["err"]) == "string" {
 		return data, errors.New(data["err"].(string))
