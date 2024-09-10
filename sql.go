@@ -377,11 +377,12 @@ func CallOther(Rpc *RPC, method RpcMethod) (interface{}, error) {
 	if data["data"] != nil {
 		json.Unmarshal(data["data"].([]byte), &list_sql)
 	}
+	data["data"] = list_sql
 	if data["err"] == nil {
 		return list_sql, nil
 	}
 	if fmt.Sprintf("%T", data["err"]) == "string" {
-		return list_sql, errors.New(data["err"].(string))
+		return data, errors.New(data["err"].(string))
 	}
-	return list_sql, data["err"].(error)
+	return data, data["err"].(error)
 }

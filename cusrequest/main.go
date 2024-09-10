@@ -6,8 +6,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/wonderivan/logger"
 )
 
 type PolicyType int32
@@ -57,7 +55,7 @@ func Request(_url string, method PolicyType, data any, Authorization string) (ma
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		logger.Info(err, "33333")
+		// logger.Info(err, "33333")
 		return resu, err
 	}
 
