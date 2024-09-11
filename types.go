@@ -24,7 +24,6 @@ func IsChinese(str string) bool {
 	}
 	return count > 0
 }
-
 func DetailErr(errStr string, c *gin.Context) {
 	pc, _, _, _ := runtime.Caller(1)
 
@@ -32,24 +31,22 @@ func DetailErr(errStr string, c *gin.Context) {
 	logger.Error(file, line, errStr)
 	data := "服务器错误"
 	var hit = false
-	if strings.Contains(errStr, "Duplicate entry") {
-		data = "数据重复,请检查名称或其它参数"
-		hit = true
-	} else if strings.Contains(errStr, "已经预约过了") {
-		data = "已经预约过了，请在预约端查询入口权限"
-		hit = true
-	} else if strings.Contains(errStr, "strconv.Atoi: parsing :") {
-		data = "缺少必要传参,请开发人员核查接口"
-		hit = true
-	} else if strings.Contains(errStr, "Unknown column") {
-		strSplit := strings.Split(errStr, "Unknown column")
-		data += ": 不清楚的字段名 " + strSplit[1]
-		hit = true
-	}
-	if IsChinese(errStr) && !hit {
+	if IsChinese(errStr) {
 		data = errStr
+		hit = true
 	}
-
+	if !hit {
+		if strings.Contains(errStr, "Duplicate entry") {
+			data = "数据重复,请检查名称或其它参数"
+		} else if strings.Contains(errStr, "已经预约过了") {
+			data = "已经预约过了，请在预约端查询入口权限"
+		} else if strings.Contains(errStr, "strconv.Atoi: parsing :") {
+			data = "缺少必要传参,请开发人员核查接口"
+		} else if strings.Contains(errStr, "Unknown column") {
+			strSplit := strings.Split(errStr, "Unknown column")
+			data += ": 不清楚的字段名 " + strSplit[1]
+		}
+	}
 	c.JSON(401, gin.H{"data": data, "err": errStr})
 }
 
