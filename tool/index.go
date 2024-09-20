@@ -77,3 +77,10 @@ func GetGinTemp(c *gin.Context) []byte {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(_temp))
 	return _temp
 }
+
+func StructToMap(_struct interface{}) map[string]interface{} {
+	var _map = make(map[string]interface{})
+	_json, _ := json.Marshal(_struct)
+	json.Unmarshal(_json, &_map)
+	return _map
+}
