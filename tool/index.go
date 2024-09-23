@@ -84,3 +84,9 @@ func StructToMap(_struct interface{}) map[string]interface{} {
 	json.Unmarshal(_json, &_map)
 	return _map
 }
+
+func MapTostruct(data map[string]interface{}, _struct interface{}) interface{} {
+	_json, _ := json.Marshal(data)
+	json.Unmarshal(_json, _struct)
+	return _struct
+}
