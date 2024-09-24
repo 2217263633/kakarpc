@@ -3,6 +3,7 @@ package tool
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"net/url"
@@ -89,4 +90,12 @@ func MapTostruct(data map[string]interface{}, _struct interface{}) interface{} {
 	_json, _ := json.Marshal(data)
 	json.Unmarshal(_json, _struct)
 	return _struct
+}
+
+func IntsToString(ints []int) string {
+	var strs []string
+	for _, v := range ints {
+		strs = append(strs, fmt.Sprintf("%d", v))
+	}
+	return strings.Join(strs, ",")
 }
