@@ -98,7 +98,7 @@ func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
 	return list_sql, data["err"].(error)
 }
 
-func CallAny(Rpc *RPC, method string, param string, chinese_name string) (interface{}, error) {
+func CallAny(Rpc *RPC, method string, param any, chinese_name string) (interface{}, error) {
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", RpcMethod{
 		Chinese_name: chinese_name,
@@ -375,9 +375,13 @@ func CallOther(Rpc *RPC, method RpcMethod) (interface{}, error) {
 
 	var list_sql interface{}
 	if data["data"] != nil {
-		json.Unmarshal(data["data"].([]byte), &list_sql)
+		_, ok := data["data"].([]byte)
+		if ok {
+			json.Unmarshal(data["data"].([]byte), &list_sql)
+			data["data"] = list_sql
+		}
 	}
-	data["data"] = list_sql
+
 	if data["err"] == nil {
 		return data, nil
 	}
