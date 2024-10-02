@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/url"
 	"runtime"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -98,4 +99,16 @@ func IntsToString(ints []int) string {
 		strs = append(strs, fmt.Sprintf("%d", v))
 	}
 	return strings.Join(strs, ",")
+}
+
+func StringToInts(str string, spilt string) []int {
+	strs := strings.Split(str, spilt)
+	var ints []int
+	for _, str := range strs {
+		_int, err := strconv.Atoi(str)
+		if err != nil {
+			ints = append(ints, _int)
+		}
+	}
+	return ints
 }
