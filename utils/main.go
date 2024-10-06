@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -103,8 +104,13 @@ func (utils CusUtils) ListToQuery(fields []string, arrs []any) string {
 	arrStr := utils.ListToListStr(arrs)
 	// logger.Info(fields, arrStr)
 	for i := 0; i < len(fields); i++ {
-		// logger.Info(fields[i], arrStr[i])
-		tring += " and " + fields[i] + "=" + arrStr[i] + " "
+		_types := fmt.Sprintf("%T", arrStr[i])
+		if _types == "string" {
+			_split_str := strings.Split(arrStr[i], "'")
+			tring += fmt.Sprintf(` and  %s like '%%%s%%' `, fields[i], _split_str[1])
+		} else {
+			tring += " and " + fields[i] + "=" + arrStr[i] + " "
+		}
 	}
 
 	if len(tring) > 0 {
