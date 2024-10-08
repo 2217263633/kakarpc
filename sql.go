@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/wonderivan/logger"
 )
 
 func QuerySql(Rpc *RPC, sql string) ([]map[string]interface{}, error) {
@@ -82,7 +80,7 @@ func CallToken(Rpc *RPC, token string) ([]map[string]interface{}, error) {
 		Chinese_name: "用户服务",
 		Method:       "UserService.ParseToken",
 		Param:        token}, &data)
-	logger.Info(data)
+
 	if data == nil || data["data"] == nil {
 		return []map[string]interface{}{}, errors.New("数据异常")
 	}
