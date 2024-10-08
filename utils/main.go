@@ -109,7 +109,7 @@ func (utils CusUtils) ListToQuery(fields []string, arrs []any) string {
 		_types := fmt.Sprintf("%T", arrStr[i])
 		if _types == "string" {
 			_split_str := strings.Split(arrStr[i], "'")
-			tring += fmt.Sprintf(` and  %s like '%%%s%%' `, fields[i], _split_str[1])
+			tring += fmt.Sprintf(` and  %s like '%%%s%%' `, fields[i], _split_str[i])
 		} else {
 			tring += " and " + fields[i] + "=" + arrStr[i] + " "
 		}
