@@ -207,7 +207,14 @@ func StructToSql(fileStruct any) ([]string, []interface{}) {
 			}
 			valueStr = append(valueStr, intStr)
 			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-
+		} else {
+			_type := fmt.Sprintf("%T", value.Field(i).Interface())
+			if _type == "types.WarningType" {
+				if value.Field(i).Int() != 0 {
+					valueStr = append(valueStr, value.Field(i).Int())
+					typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+				}
+			}
 		}
 	}
 
