@@ -112,3 +112,14 @@ func StringToInts(str string, spilt string) []int {
 	}
 	return ints
 }
+
+// 会对 json 的 res["data"] 其作用
+func JsonToStruct(res *map[string]interface{}) {
+	var list interface{}
+	err := json.Unmarshal([]byte((*res)["data"].([]uint8)), &list)
+	if err != nil {
+		(*res)["err"] = err
+		return
+	}
+	(*res)["data"] = list
+}
