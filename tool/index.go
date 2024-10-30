@@ -87,6 +87,17 @@ func StructToMap(_struct interface{}) map[string]interface{} {
 	return _map
 }
 
+func StructToKeyValue(_struct interface{}) ([]string, []interface{}) {
+	var keys []string
+	var values []interface{}
+	_map := StructToMap(_struct)
+	for key, value := range _map {
+		keys = append(keys, key)
+		values = append(values, value)
+	}
+	return keys, values
+}
+
 func MapTostruct(data map[string]interface{}, _struct interface{}) interface{} {
 	_json, _ := json.Marshal(data)
 	json.Unmarshal(_json, _struct)

@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/wonderivan/logger"
 )
 
 type CusUtils struct{}
@@ -104,11 +102,9 @@ func (utils CusUtils) ListToQuery(fields []string, arrs []any) string {
 		return tring
 	}
 	arrStr := utils.ListToListStr(arrs)
-	logger.Info(fields, arrStr)
 	for i := 0; i < len(fields); i++ {
 
-		_types := fmt.Sprintf("%T", arrStr[i])
-
+		_types := fmt.Sprintf("%T", arrs[i])
 		if _types == "string" {
 			_split_str := strings.Split(arrStr[i], "'")
 			__str := ""
