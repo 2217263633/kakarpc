@@ -241,6 +241,23 @@ func StructToSql2(fileStruct any, obj map[string]interface{}) ([]string, []inter
 				}
 				continue
 			}
+			if t.Field(i).Type.String() == "[]int" {
+				var intArr = obj[_names].([]interface{})
+				if len(intArr) == 0 {
+					continue
+				}
+				intStr := ""
+				for index, intVal := range intArr {
+					if index == len(intArr)-1 {
+						intStr += strconv.Itoa(int(intVal.(float64)))
+					} else {
+						intStr += strconv.Itoa(int(intVal.(float64))) + ","
+					}
+				}
+				valueStr = append(valueStr, intStr)
+				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+				continue
+			}
 			// logger.Info(value.Field(i).Interface(), fmt.Sprintf("%T", value.Field(i).Interface()), ":",
 			// 	strings.ToLower(t.Field(i).Name), fmt.Sprintf(`%T`, strings.ToLower(t.Field(i).Name)))
 
