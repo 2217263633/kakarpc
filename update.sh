@@ -4,7 +4,7 @@ version=$(echo "$string" | awk -F. '{print $1"."$2"."$3+1}')
 echo $version
 git add .
 git commit -m "update version to $version  $1"
-git tag $version -m "$version"
+git tag v$version -m "v$version"
 git push --tags
 echo "tags finish--------"
 git push
