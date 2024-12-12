@@ -44,6 +44,9 @@ func (utils CusUtils) ListToAny(arrs []any) string {
 		} else if x == "int" {
 			floatStr := fmt.Sprintf("%d", arr)
 			tempStr += floatStr + ","
+		} else {
+			floatStr := fmt.Sprintf("%d", arr)
+			tempStr += floatStr + ","
 		}
 	}
 	if len(tempStr) > 0 {
@@ -69,6 +72,9 @@ func (utils CusUtils) ListToListStr(arrs []any) []string {
 			floatStr := arr.(time.Time).Format("2006-01-02 15:04:05")
 			arrStr = append(arrStr, "'"+floatStr+"'")
 		} else if x == "int" {
+			floatStr := fmt.Sprintf("%d", arr)
+			arrStr = append(arrStr, floatStr)
+		} else {
 			floatStr := fmt.Sprintf("%d", arr)
 			arrStr = append(arrStr, floatStr)
 		}
