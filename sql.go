@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/2217263633/kakarpc/tool"
 )
 
 func QuerySql(Rpc *RPC, sql string) ([]map[string]interface{}, error) {
@@ -130,91 +132,92 @@ func ErrDeal(err error, res *map[string]interface{}) {
 
 func StructToSql(fileStruct any) ([]string, []interface{}) {
 	t := reflect.TypeOf(fileStruct)
-	value := reflect.ValueOf(fileStruct)
 
-	fieleNum := t.NumField()
+	value := reflect.ValueOf(fileStruct)
+	_map := tool.StructToMap(fileStruct)
+
 	var typeStr []string = make([]string, 0)
 	var valueStr []interface{} = make([]interface{}, 0)
-	for i := 0; i < fieleNum; i++ {
-		if t.Field(i).Tag.Get("show") != "" {
-			continue
-		}
-		// logger.Info(t.Field(i).Type.String(), t.Field(i).Name)
-		// logger.Info(t.Field(i).Type.String(), t.Field(i).Name)
-		// logger.Info(t.Field(i).Type.String(), t.Field(i).Type.Name(), value.Field(i))
-		if t.Field(i).Type.Name() == "int" {
-			if value.Field(i).Int() != 0 {
-				valueStr = append(valueStr, value.Field(i).Int())
-				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-			}
-		} else if t.Field(i).Type.Name() == "float64" {
-			if value.Field(i).Float() > 0 {
-				valueStr = append(valueStr, value.Field(i).Float())
-				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-			}
-		} else if t.Field(i).Type.Name() == "float32" {
-			if value.Field(i).Float() > 0 {
-				valueStr = append(valueStr, value.Field(i).Float())
-				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-			}
-		} else if t.Field(i).Type.Name() == "string" {
-			if len(value.Field(i).String()) > 0 {
-				valueStr = append(valueStr, value.Field(i).String())
-				typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-			}
-		} else if t.Field(i).Type.Name() == "Time" {
-
-			if value.Field(i).Interface().(time.Time).Year() < 2000 {
+	for k := range _map {
+		key, isbool := t.FieldByName(k)
+		if isbool {
+			if key.Tag.Get("show") != "" {
 				continue
-			}
-			valueStr = append(valueStr, value.Field(i).Interface().(time.Time).Local().Format("2006-01-02 15:04:05"))
-			// logger.Info(value.Field(i), value.Field(i).Interface().(time.Time).Local().Format("2006-01-02 15:04:05"))
-			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-		} else if t.Field(i).Type.String() == "[]int" {
-			var intArr = value.Field(i).Interface().([]int)
-			if len(intArr) == 0 {
-				continue
-			}
-			intStr := ""
-			for index, intVal := range intArr {
-				if index == len(intArr)-1 {
-					intStr += strconv.Itoa(intVal)
-				} else {
-					intStr += strconv.Itoa(intVal) + ","
+			} else if key.Type.Name() == "float64" {
+				if value.FieldByName(key.Name).Float() > 0 {
+					valueStr = append(valueStr, value.FieldByName(key.Name).Float())
+					typeStr = append(typeStr, strings.ToLower(key.Name))
 				}
-			}
-			valueStr = append(valueStr, intStr)
-			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-		} else if t.Field(i).Type.String() == "[]string" {
-			var strArr = value.Field(i).Interface().([]string)
-			intStr := ""
-			for index, intVal := range strArr {
-				if index == len(strArr)-1 {
-					intStr += intVal
-				} else {
-					intStr += intVal + ","
+			} else if key.Type.Name() == "float32" {
+				if value.FieldByName(key.Name).Float() > 0 {
+					valueStr = append(valueStr, value.FieldByName(key.Name).Float())
+					typeStr = append(typeStr, strings.ToLower(key.Name))
 				}
-			}
-			valueStr = append(valueStr, intStr)
-			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-		} else if t.Field(i).Type.String() == "bool" {
+			} else if key.Type.Name() == "string" {
+				if len(value.FieldByName(key.Name).String()) > 0 {
+					valueStr = append(valueStr, value.FieldByName(key.Name).String())
+					typeStr = append(typeStr, strings.ToLower(key.Name))
+				}
+			} else if key.Type.Name() == "Time" {
 
-			var strArr = value.Field(i).Interface().(bool)
-			intStr := 0
-			if strArr {
-				intStr = 1
-
-			}
-			valueStr = append(valueStr, intStr)
-			typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
-		} else {
-			_type := fmt.Sprintf("%T", value.Field(i).Interface())
-			if _type == "types.WarningType" {
-				if value.Field(i).Int() != 0 {
-					valueStr = append(valueStr, value.Field(i).Int())
-					typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
+				if value.FieldByName(key.Name).Interface().(time.Time).Year() < 2000 {
+					continue
+				}
+				valueStr = append(valueStr, value.FieldByName(key.Name).Interface().(time.Time).Local().Format("2006-01-02 15:04:05"))
+				typeStr = append(typeStr, strings.ToLower(key.Name))
+			} else if key.Type.String() == "[]int" {
+				var intArr = value.FieldByName(key.Name).Interface().([]int)
+				if len(intArr) == 0 {
+					continue
+				}
+				intStr := ""
+				for index, intVal := range intArr {
+					if index == len(intArr)-1 {
+						intStr += strconv.Itoa(intVal)
+					} else {
+						intStr += strconv.Itoa(intVal) + ","
+					}
+				}
+				valueStr = append(valueStr, intStr)
+				typeStr = append(typeStr, strings.ToLower(key.Name))
+			} else if key.Type.String() == "[]string" {
+				var strArr = value.FieldByName(key.Name).Interface().([]string)
+				intStr := ""
+				for index, intVal := range strArr {
+					if index == len(strArr)-1 {
+						intStr += intVal
+					} else {
+						intStr += intVal + ","
+					}
+				}
+				valueStr = append(valueStr, intStr)
+				typeStr = append(typeStr, strings.ToLower(key.Name))
+			} else if key.Type.String() == "bool" {
+				var strArr = value.FieldByName(key.Name).Interface().(bool)
+				intStr := 0
+				if strArr {
+					intStr = 1
+				}
+				valueStr = append(valueStr, intStr)
+				typeStr = append(typeStr, strings.ToLower(key.Name))
+			} else {
+				_type := fmt.Sprintf("%T", value.FieldByName(key.Name).Interface())
+				if _type == "types.WarningType" {
+					if value.FieldByName(key.Name).Int() != 0 {
+						valueStr = append(valueStr, value.FieldByName(key.Name).Int())
+						typeStr = append(typeStr, strings.ToLower(key.Name))
+					}
 				}
 			}
+			//  else if strings.Contains(t.Field(i).Type.String(), "From") {
+			// 	// logger.Info(t.Field(i).Type.String(), t.Field(i).Name, value.Field(i), "---",
+			// 	// 	t.Field(i).Type.Kind(),
+			// 	// 	_map,
+			// 	// )
+			// 	// fields, values := StructToSql(_map[t.Field(i).Name])
+			// 	// logger.Info(fields, values)
+			// }
+			// logger.Info(key.Type.Name(), value.FieldByName(key.Name))
 		}
 	}
 
