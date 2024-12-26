@@ -214,11 +214,61 @@ func StructToSql(fileStruct any) ([]string, []interface{}) {
 					valueStr = append(valueStr, value.Field(i).Int())
 					typeStr = append(typeStr, strings.ToLower(t.Field(i).Name))
 				}
+			} else if strings.Contains(_type, "From") {
+				v := value.Field(i)
+				bytes, _ := json.Marshal(v.Interface())
+				var map_data map[string]interface{}
+				json.Unmarshal(bytes, &map_data)
+				for k, v := range map_data {
+					// logger.Info(k, v, fmt.Sprintf("%T", v))
+					_valueStr := judgeType(v)
+					if _valueStr != "false" {
+						typeStr = append(typeStr, strings.ToLower(k))
+						valueStr = append(valueStr, _valueStr)
+					}
+				}
 			}
+
 		}
 	}
-
 	return typeStr, valueStr
+}
+
+func judgeType(value any) string {
+	_type := fmt.Sprintf("%T", value)
+	switch _type {
+	case "float64":
+		if value == 0 {
+			return "false"
+		}
+		// 很多 int 类型也会成为 float 类型 这里我们尝试回复为整数
+		// 首先 判断小数点后是否大于0
+		flo_value_str := fmt.Sprintf("%f", value)
+		flo_value_Arr := strings.Split(flo_value_str, ".")
+		new_flo := "0." + flo_value_Arr[1]
+		new_flo_float, _ := strconv.ParseFloat(new_flo, 64)
+		if new_flo_float > 0 {
+			// float 类型
+			return flo_value_str
+		} else {
+			return fmt.Sprintf("%d", int(value.(float64)))
+		}
+
+	case "string":
+		if value == "" {
+			return "false"
+		}
+		// json 下的数据 time 类型也会解析为 string 需要判断一下
+		_time, err := time.ParseInLocation(time.RFC3339, value.(string), time.Local)
+		if err != nil {
+			return value.(string)
+		}
+		if _time.Year() > 2000 {
+			return _time.Format(time.DateTime)
+		}
+
+	}
+	return "false"
 }
 
 func StructToSql2(fileStruct any, obj map[string]interface{}) ([]string, []interface{}) {
