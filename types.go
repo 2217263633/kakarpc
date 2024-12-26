@@ -45,6 +45,9 @@ func DetailErr(errStr string, c *gin.Context) {
 		} else if strings.Contains(errStr, "Unknown column") {
 			strSplit := strings.Split(errStr, "Unknown column")
 			data += ": 不清楚的字段名 " + strSplit[1]
+		} else if strings.Contains(errStr, "validation for") {
+			find_index := strings.Index(errStr, "validation for")
+			data = "缺少参数" + errStr[find_index+14:]
 		}
 	}
 	c.JSON(401, gin.H{"data": data, "err": errStr})
