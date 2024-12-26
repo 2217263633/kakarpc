@@ -143,6 +143,11 @@ func StructToSql(fileStruct any) ([]string, []interface{}) {
 		if isbool {
 			if key.Tag.Get("show") != "" {
 				continue
+			} else if key.Type.Name() == "int" {
+				if value.FieldByName(key.Name).Int() > 0 {
+					valueStr = append(valueStr, value.FieldByName(key.Name).Int())
+					typeStr = append(typeStr, strings.ToLower(key.Name))
+				}
 			} else if key.Type.Name() == "float64" {
 				if value.FieldByName(key.Name).Float() > 0 {
 					valueStr = append(valueStr, value.FieldByName(key.Name).Float())
