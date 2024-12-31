@@ -138,6 +138,16 @@ func StructToSql(fileStruct any) ([]string, []interface{}) {
 
 	var typeStr []string = make([]string, 0)
 	var valueStr []interface{} = make([]interface{}, 0)
+	// 例外  因为现在map被排序了，导致有些字段不在第一位，所以这里需要判断一下
+	// 我们把 Company_id 放到第一位，其他字段放到最后一位 2024年12月31日 kasia
+	if _map["Company_id"] != nil {
+		key, isbool := t.FieldByName("Company_id")
+		if isbool {
+			valueStr = append(valueStr, value.FieldByName(key.Name).Int())
+			typeStr = append(typeStr, strings.ToLower(key.Name))
+			delete(_map, "Company_id")
+		}
+	}
 	for k := range _map {
 		key, isbool := t.FieldByName(k)
 		if isbool {
