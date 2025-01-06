@@ -143,8 +143,10 @@ func StructToSql(fileStruct any) ([]string, []interface{}) {
 	if _map["Company_id"] != nil {
 		key, isbool := t.FieldByName("Company_id")
 		if isbool {
-			valueStr = append(valueStr, value.FieldByName(key.Name).Int())
-			typeStr = append(typeStr, strings.ToLower(key.Name))
+			if value.FieldByName(key.Name).Int() != 0 {
+				valueStr = append(valueStr, value.FieldByName(key.Name).Int())
+				typeStr = append(typeStr, strings.ToLower(key.Name))
+			}
 			delete(_map, "Company_id")
 		}
 	}
