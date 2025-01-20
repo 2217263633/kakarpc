@@ -371,7 +371,7 @@ func InsertTableId(Rpc *RPC, sql string) (int, error) {
 	return int(list_sql.(float64)), nil
 }
 
-func QueryIdlimit1(Rpc *RPC, tableName string) ([]map[string]interface{}, error) {
+func QueryIdlimit1(_Rpc *RPC, tableName string) ([]map[string]interface{}, error) {
 	var data map[string]interface{}
 	Rpc.Client.Call("RPC.Call", RpcMethod{
 		Chinese_name: "数据库调用",

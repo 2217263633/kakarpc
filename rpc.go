@@ -254,6 +254,8 @@ func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
 
 type Functype func(int)
 
+var Rpc *RPC = &RPC{}
+
 // 连接注册中心
 func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 	client, err := rpc.DialHTTP("tcp", "127.0.0.1:9100")
@@ -261,7 +263,7 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		logger.Error("rpc.DialHTTP error: %v", err)
 	} else {
 		_rpc.Client = client
-
+		Rpc.Client = client
 		structType := reflect.TypeOf(_rpc.Conn)
 
 		for i := 0; i < structType.NumMethod(); i++ {
