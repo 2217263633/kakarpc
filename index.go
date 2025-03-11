@@ -21,7 +21,8 @@ type ServerStruct struct {
 	Swag_port    int                    `yaml:"swag_port"`
 	Router       map[string]interface{} `yaml:"router"` //把自己的方法和需要传递的参数写在这里
 	Path         string                 `yaml:"path"`
-	Mode         ModeType               `yaml:"mode"` // 运行模式，可选值为 "debug" 或 "release"
+	Mode         ModeType               `yaml:"mode"`        // 运行模式，可选值为 "debug" 或 "release"
+	Server_Path  string                 `yaml:"server_path"` //例如 127.0.0.1:9100
 }
 
 type YamlStruct struct {

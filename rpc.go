@@ -98,7 +98,7 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 				Name:   strings.Split(req.Name, ".")[0],
 				Router: req.Router,
 			}
-			logger.Info("转发服务", "/"+req.Name)
+			// logger.Info("转发服务", "/"+req.Name)
 			centor.R.GET("/"+req.Name+"/*any", func(c *gin.Context) {
 				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
 				url, _ := url.Parse(target)
@@ -227,7 +227,7 @@ func (con *RPC) GetConfig(req string, res *map[string]interface{}) error {
 
 // 调用其他服务
 func (con *RPC) Call(method RpcMethod, res *map[string]interface{}) error {
-	logger.Info("调用服务", method.Chinese_name, method.Method, method.Param)
+	// logger.Info("调用服务", method.Chinese_name, method.Method, method.Param)
 	// 因为编码原因 返回的 err 我们把它变成string  那边拿到后 做err 处理
 	if RpcClient[method.Chinese_name] != nil && RpcClient[method.Chinese_name].Client[method.Method] != nil {
 		err := RpcClient[method.Chinese_name].Client[method.Method].Call(method.Method, method.Param, res)
@@ -258,7 +258,10 @@ var Rpc *RPC = &RPC{}
 
 // 连接注册中心
 func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
-	client, err := rpc.DialHTTP("tcp", "127.0.0.1:9100")
+	if yaml.Server_Path == "" {
+		yaml.Server_Path = "127.0.0.1:9100"
+	}
+	client, err := rpc.DialHTTP("tcp", yaml.Server_Path)
 	if err != nil {
 		logger.Error("rpc.DialHTTP error: %v", err)
 	} else {
