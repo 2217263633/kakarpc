@@ -9,5 +9,5 @@ git commit -m "update version to $version  $1"
 git tag $version -m "$version"
 git push --tags
 echo "tags finish--------"
-git push
+git push origin master
 sleep  10s
