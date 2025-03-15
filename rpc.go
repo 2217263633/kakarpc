@@ -1,21 +1,25 @@
 package myrpc
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/fs"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/rpc"
+	"net/smtp"
 	"net/url"
 	"os"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
+	"github.com/jordan-wright/email"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/wonderivan/logger"
@@ -256,6 +260,32 @@ type Functype func(int)
 
 var Rpc *RPC = &RPC{}
 
+func SendEmail(errStr string, chinese_name string) {
+	e := email.NewEmail()
+	emailUser := "2217263633@qq.com"
+	emailPasswd := "hwlfnkgfdqgmdjbd"
+	e.From = fmt.Sprintf("Get <%s>", emailUser)
+	e.To = []string{"1051744620@qq.com"}
+	e.Subject = "出现bug了:_" + chinese_name
+	e.HTML = []byte(errStr)
+	e.SendWithTLS("smtp.qq.com:465", smtp.PlainAuth("", emailUser, emailPasswd, "smtp.qq.com"), &tls.Config{
+		InsecureSkipVerify: true, ServerName: "smtp.qq.com",
+	})
+}
+func Panic(c *gin.Context, chinese_name string) {
+	defer func() {
+		if err := recover(); err != nil {
+			logger.Error("panic", err)
+			// 打印调用堆栈信息
+			buf := make([]byte, 1024)
+			n := runtime.Stack(buf, false)
+			SendEmail(string(buf[:n])+"\n  "+c.Request.URL.String()+"\n  "+c.Request.Method, chinese_name)
+			c.JSON(500, gin.H{"data": err})
+		}
+	}()
+	c.Next()
+}
+
 // 连接注册中心
 func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 	if yaml.Server_Path == "" {
@@ -268,7 +298,9 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		_rpc.Client = client
 		Rpc.Client = client
 		structType := reflect.TypeOf(_rpc.Conn)
-
+		_rpc.R.Use(func(c *gin.Context) {
+			Panic(c, yaml.Chinese_name)
+		})
 		for i := 0; i < structType.NumMethod(); i++ {
 			method := structType.Method(i)
 			yaml.Router[method.Name] = []string{method.Type.String()}
@@ -279,6 +311,7 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		} else {
 			logger.Info("连接注册中心成功:", yaml.Chinese_name, _rpc.Count)
 		}
+
 	}
 
 	// 判断注册进程是否存活
