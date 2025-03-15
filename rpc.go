@@ -268,9 +268,12 @@ func SendEmail(errStr string, chinese_name string) {
 	e.To = []string{"1051744620@qq.com"}
 	e.Subject = "出现bug了:_" + chinese_name
 	e.HTML = []byte(errStr)
-	e.SendWithTLS("smtp.qq.com:465", smtp.PlainAuth("", emailUser, emailPasswd, "smtp.qq.com"), &tls.Config{
+	err := e.SendWithTLS("smtp.qq.com:465", smtp.PlainAuth("", emailUser, emailPasswd, "smtp.qq.com"), &tls.Config{
 		InsecureSkipVerify: true, ServerName: "smtp.qq.com",
 	})
+	if err != nil {
+		logger.Error("发送邮件失败", err)
+	}
 }
 func Panic(c *gin.Context, chinese_name string) {
 	defer func() {
