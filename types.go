@@ -50,6 +50,9 @@ func DetailErr(errStr string, c *gin.Context) {
 			data = "缺少参数" + errStr[find_index+14:]
 		}
 	}
+	if strings.Contains(errStr, "3306") {
+		data = "数据服务错误"
+	}
 	c.JSON(401, gin.H{"data": data, "err": errStr})
 }
 
