@@ -2,7 +2,9 @@ package myrpc
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -189,7 +191,17 @@ func (r *RPC) CenterInit(_rpc *RPC) {
 	go _rpc.R.Run(fmt.Sprintf(":%d", _rpc.Swag_port))
 
 	logger.Info("rpc server start at port: ", initPort)
-	err := http.ListenAndServe(":"+strconv.Itoa(initPort), nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		rpc.DefaultServer.ServeHTTP(w, r)
+	})
+	mux.HandleFunc("/remote", func(w http.ResponseWriter, r *http.Request) {
+		ip := strings.Split(r.RemoteAddr, ":")[0]
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(ip))
+	})
+
+	err := http.ListenAndServe(":"+strconv.Itoa(initPort), mux)
 	if err != nil {
 		logger.Error("error listening", err.Error())
 		return
@@ -269,6 +281,23 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 	if err != nil {
 		logger.Error("rpc.DialHTTP error: %v", err)
 	} else {
+
+		url := "http://" + yaml.Server_Path + "/remote"
+		resp, err := http.Get(url)
+		if err != nil {
+			log.Fatalf("Error sending GET request: %v", err)
+		}
+		defer resp.Body.Close()
+
+		// 读取响应体
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalf("Error reading response body: %v", err)
+		}
+		if resp.StatusCode == 200 {
+			yaml.Ip = string(body)
+		}
+
 		_rpc.Client = client
 		Rpc.Client = client
 		structType := reflect.TypeOf(_rpc.Conn)
