@@ -289,7 +289,6 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		}
 		defer resp.Body.Close()
 
-		// 读取响应体
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatalf("Error reading response body: %v", err)
@@ -297,7 +296,8 @@ func (con *RPC) GoRpc(yaml *ServerStruct, _rpc *RPC) {
 		if resp.StatusCode == 200 {
 			yaml.Ip = string(body)
 		}
-
+		// 读取响应体
+		logger.Info("remoe_addr", string(body))
 		_rpc.Client = client
 		Rpc.Client = client
 		structType := reflect.TypeOf(_rpc.Conn)
