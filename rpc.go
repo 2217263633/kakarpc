@@ -59,6 +59,7 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 		return fmt.Errorf("中文名不能为空,Chinese_name")
 	}
 	RpcServer[req.Chinese_name] = &YamlStruct{Server: req}
+
 	// rpc 端口
 	if req.Port == 0 {
 		// 临时分配端口
@@ -90,35 +91,38 @@ func (r *RPC) Register(req ServerStruct, res *ServerStruct) error {
 	}
 
 	time.AfterFunc(time.Second*5, func() {
+		if req.Ip == "" {
+			req.Ip = "127.0.0.1"
+		}
 
 		if RpcClient[req.Chinese_name] == nil {
 			RpcClient[req.Chinese_name] = &RpcClientType{
 				Heart:  time.Now(),
-				Addr:   "127.0.0.1:" + strconv.Itoa(req.Swag_port),
+				Addr:   req.Ip + ":" + strconv.Itoa(req.Swag_port),
 				Name:   strings.Split(req.Name, ".")[0],
 				Router: req.Router,
 			}
-			// logger.Info("转发服务", "/"+req.Name)
+			logger.Info("转发服务", "/"+req.Name, req.Ip+":"+strconv.Itoa(req.Swag_port))
 			centor.R.GET("/"+req.Name+"/*any", func(c *gin.Context) {
-				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				target := "http://" + req.Ip + ":" + strconv.Itoa(req.Swag_port)
 				url, _ := url.Parse(target)
 				proxy := httputil.NewSingleHostReverseProxy(url)
 				proxy.ServeHTTP(c.Writer, c.Request)
 			})
 			centor.R.POST("/"+req.Name+"/*any", func(c *gin.Context) {
-				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				target := "http://" + req.Ip + ":" + strconv.Itoa(req.Swag_port)
 				url, _ := url.Parse(target)
 				proxy := httputil.NewSingleHostReverseProxy(url)
 				proxy.ServeHTTP(c.Writer, c.Request)
 			})
 			centor.R.PUT("/"+req.Name+"/*any", func(c *gin.Context) {
-				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				target := "http://" + req.Ip + ":" + strconv.Itoa(req.Swag_port)
 				url, _ := url.Parse(target)
 				proxy := httputil.NewSingleHostReverseProxy(url)
 				proxy.ServeHTTP(c.Writer, c.Request)
 			})
 			centor.R.DELETE("/"+req.Name+"/*any", func(c *gin.Context) {
-				target := "http://127.0.0.1:" + strconv.Itoa(req.Swag_port)
+				target := "http://" + req.Ip + ":" + strconv.Itoa(req.Swag_port)
 				url, _ := url.Parse(target)
 				proxy := httputil.NewSingleHostReverseProxy(url)
 				proxy.ServeHTTP(c.Writer, c.Request)

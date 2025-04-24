@@ -23,6 +23,7 @@ type ServerStruct struct {
 	Path         string                 `yaml:"path"`
 	Mode         ModeType               `yaml:"mode"`        // 运行模式，可选值为 "debug" 或 "release"
 	Server_Path  string                 `yaml:"server_path"` //例如 127.0.0.1:9100
+	Ip           string                 `yaml:"ip"`          // 运行ip
 }
 
 type YamlStruct struct {
