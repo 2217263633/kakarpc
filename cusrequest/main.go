@@ -138,3 +138,67 @@ func Request2(_url string, method PolicyType, data any, Authorization string) (s
 	}
 	return string(body), nil
 }
+
+type RequestType struct {
+	Url           string
+	Method        string
+	Data          any
+	Params        any
+	Authorization string
+	Approval      string
+}
+
+func Request3(request RequestType) (string, error) {
+	var resu string = ""
+	jsonVal, err := json.Marshal(request.Data)
+	payload := strings.NewReader(string(jsonVal))
+
+	if err != nil {
+		payload = nil
+	}
+
+	if request.Params != nil {
+		param_str := ""
+		for k, v := range request.Params.(map[string]interface{}) {
+			param_str += k + "=" + v.(string) + "&"
+		}
+		if param_str != "" {
+			param_str = "?" + param_str
+		}
+
+		request.Url += param_str
+	}
+
+	client := &http.Client{
+		Timeout: time.Second * 25,
+	}
+	// 变大写
+	request.Method = strings.ToUpper(request.Method)
+	req, err := http.NewRequest(request.Method, request.Url, payload)
+	if err != nil {
+
+		return resu, err
+	}
+	req.Header.Add("Authorization", request.Authorization)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Approval", request.Approval)
+	if request.Method != "get" {
+		req.Header.Add("Content-Type", "application/json")
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return resu, err
+	}
+
+	if res.StatusCode != 200 {
+		return resu, fmt.Errorf("status code is %d", res.StatusCode)
+	}
+
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return resu, err
+	}
+	return string(body), nil
+}
