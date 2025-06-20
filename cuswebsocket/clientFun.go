@@ -103,9 +103,15 @@ func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, com
 			Business: _msg.Business,
 			UserId:   _msg.UserId,
 			CallUrl:  _msg.CallUrl,
+			Type:     _msg.Type,
 		})
-		c.NotFindCompany(rpc, company_id, user_id, string(resp), "")
-		logger.Info("已把离线消息存入数据库，等待他上线查看")
+		// c.NotFindCompany(rpc, company_id, user_id, string(resp), "")
+		for _, _user_id_str := range _msg.User_ids {
+			_user_id, _ := strconv.Atoi(_user_id_str)
+			c.NotFind(rpc, _user_id, user_id, string(resp), "")
+		}
+		// c.NotFind()
+		logger.Info("已把离线消息存入数据库，等待他上线查看", senUrl)
 		return err
 	}
 
@@ -139,7 +145,7 @@ func (c *Cuswebsocket) NotFindCompany(rpc *types.RPC, company_id int, send_user_
 	_sql.Company_id = company_id
 	_, err := Mysql.CallOther(rpc, types.RpcMethod{
 		Chinese_name: "消息",
-		Method:       "MsgService.PostGetCompany_msg",
+		Method:       "MsgService.PostCompany_msg",
 		Param:        _sql.ToMap(),
 	})
 	if err != nil {
