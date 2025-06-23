@@ -52,6 +52,7 @@ var RpcClient = map[string]*RpcClientType{}
 type SqlStruct struct {
 	Values       string // 不要写 select
 	Tabel_name   string // 不要写 from
+	Inner_table  string // 自己写 inner join 一般查询使用的
 	Where        string // 自己写 where 或者 on
 	Order        string // 要写 order by
 	Page         int    // 自己写页码
@@ -66,8 +67,8 @@ func (_sql SqlStruct) ToString() string {
 	if _sql.Values == "" {
 		_sql.Values = "*"
 	}
-	sql := fmt.Sprintf(`select %s from %s `,
-		_sql.Values, _sql.Tabel_name)
+	sql := fmt.Sprintf(`select %s from %s %s`,
+		_sql.Values, _sql.Tabel_name, _sql.Inner_table)
 
 	if _sql.Where != "" {
 		sql += _sql.Where
