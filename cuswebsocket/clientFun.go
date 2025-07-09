@@ -74,13 +74,13 @@ func (c *Cuswebsocket) GetClient(rpc *types.RPC, _msg WsMessage, token string, u
 }
 
 func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, company_id int, user_id int) error {
-	senUrl := "https://chat.kasiasafe.top:8091/api/v1/ws/sendMsg"
+	senUrl := "https://chat.kasiasafe.top:8091/api/sendUser"
 	if os.Args[len(os.Args)-1] == "test" {
 		senUrl = "http://testqiye.kasiasafe.top:8091/api/v1/ws/sendMsg"
 	} else if os.Args[len(os.Args)-1] == "server" {
 		senUrl = "https://chat.kasiasafe.top:8091/api/v1/ws/sendMsg"
 	} else {
-		senUrl = "http://127.0.0.1:8091/api/v1/ws/sendMsg"
+		senUrl = "http://127.0.0.1:8094/api/sendUser"
 	}
 	if _msg.Business == 0 {
 		_msg.Business = 1
@@ -88,33 +88,32 @@ func (c *Cuswebsocket) SendMsg(rpc *types.RPC, _msg WsMessage, token string, com
 	if _msg.Type == 0 {
 		_msg.Type = 4
 	}
-
-	_, err := cusrequest.Request(senUrl, cusrequest.Post, map[string]interface{}{
-		"business": _msg.Business,
-		"data":     _msg.Data,
-		"userIds":  _msg.User_ids,
-		"type":     _msg.Type,
-		"callUrl":  _msg.CallUrl,
+	resp, _ := json.Marshal(&WsMessage{
+		Data:     _msg.Data,
+		Business: _msg.Business,
+		UserId:   _msg.UserId,
+		CallUrl:  _msg.CallUrl,
+		Type:     _msg.Type,
+	})
+	resu, err := cusrequest.Request(senUrl, cusrequest.Post, map[string]interface{}{
+		"user_ids": _msg.User_ids,
+		"message":  string(resp),
 	}, token)
+	// logger.Info(resu, err)
 	if err != nil {
-		// logger.Info(_msg.UserId, "不在线", err)
-		resp, _ := json.Marshal(&WsMessage{
-			Data:     _msg.Data,
-			Business: _msg.Business,
-			UserId:   _msg.UserId,
-			CallUrl:  _msg.CallUrl,
-			Type:     _msg.Type,
-		})
-		// c.NotFindCompany(rpc, company_id, user_id, string(resp), "")
-		for _, _user_id_str := range _msg.User_ids {
-			_user_id, _ := strconv.Atoi(_user_id_str)
-			c.NotFind(rpc, _user_id, user_id, string(resp), "")
+
+		not_user_ids, ok := resu["data"].([]interface{})
+		// logger.Error(not_user_ids, resu["data"], resu)
+		if ok {
+			// logger.Error(not_user_ids)
+			for _, _user_id_str := range not_user_ids {
+				_user_id, _ := strconv.Atoi(_user_id_str.(string))
+				c.NotFind(rpc, _user_id, user_id, string(resp), "")
+			}
+			logger.Info("已把离线消息存入 %s 数据库，等待他上线查看 %s", resu, senUrl)
 		}
-		// c.NotFind()
-		logger.Info("已把离线消息存入数据库，等待他上线查看", senUrl)
 		return err
 	}
-
 	return nil
 }
 
